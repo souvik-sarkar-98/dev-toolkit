@@ -1,0 +1,237 @@
+@use 'sass:map';
+
+/// Shared bottom-sheet / centered-dialog shell for mobile forms and wizards.
+$mobile-form-sheet-defaults: (
+  z-backdrop: 250,
+  z-sheet: 251,
+  max-height-mobile: min(92vh, 680px),
+  max-height-desktop: min(85vh, 720px),
+  desktop-width: min(720px, calc(100vw - 48px)),
+  title-row-padding-x: 36px,
+  title-row-margin-bottom: 1rem,
+  desktop-dialog: false,
+);
+
+@mixin mobile-form-sheet($block, $options: ()) {
+  $config: map.merge($mobile-form-sheet-defaults, $options);
+  $z-backdrop: map.get($config, z-backdrop);
+  $z-sheet: map.get($config, z-sheet);
+
+  .#{$block}__backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    z-index: $z-backdrop;
+    animation: #{$block}-fade-in 0.2s ease;
+  }
+
+  .#{$block} {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: $z-sheet;
+    background: #ffffff;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.12);
+    padding: 10px 16px calc(16px + env(safe-area-inset-bottom, 0));
+    animation: #{$block}-slide-up 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+    max-height: map.get($config, max-height-mobile);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .#{$block}__handle {
+    width: 36px;
+    height: 4px;
+    border-radius: 999px;
+    background: #cbd5e1;
+    margin: 0 auto 12px;
+    flex-shrink: 0;
+  }
+
+  .#{$block}__title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: map.get($config, title-row-margin-bottom);
+    padding: 0 map.get($config, title-row-padding-x);
+    flex-shrink: 0;
+  }
+
+  .#{$block}__title {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--secondary-800);
+    text-align: center;
+  }
+
+  .#{$block}__back,
+  .#{$block}__close {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: var(--secondary-600);
+    cursor: pointer;
+    padding: 0;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    &:active {
+      background: #e2e8f0;
+    }
+  }
+
+  .#{$block}__back {
+    left: 0;
+  }
+
+  .#{$block}__close {
+    right: 0;
+  }
+
+  .#{$block}__body {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 8px;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .#{$block}__form {
+    display: block;
+  }
+
+  .#{$block}__actions {
+    padding-top: 12px;
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+    flex-shrink: 0;
+  }
+
+  @keyframes #{$block}-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes #{$block}-slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  @if map.get($config, desktop-dialog) {
+    @media (min-width: 768px) {
+      .#{$block} {
+        left: 50%;
+        right: auto;
+        top: 50%;
+        bottom: auto;
+        transform: translate(-50%, -50%);
+        width: map.get($config, desktop-width);
+        max-height: map.get($config, max-height-desktop);
+        border-radius: 20px;
+        padding: 16px 24px 20px;
+        animation: #{$block}-dialog-in 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .#{$block}__handle {
+        display: none;
+      }
+    }
+
+    @keyframes #{$block}-dialog-in {
+      from {
+        opacity: 0;
+        transform: translate(-50%, calc(-50% + 16px));
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+  }
+}
+
+/// Compact summary card used in create/wizard flows.
+@mixin mobile-form-sheet-summary-card($block) {
+  .#{$block}__summary {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+  }
+
+  .#{$block}__summary-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.72rem;
+
+    & + & {
+      margin-top: 6px;
+    }
+  }
+
+  .#{$block}__summary-label {
+    color: var(--secondary-500);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .#{$block}__summary-value {
+    color: var(--secondary-800);
+    font-weight: 600;
+    text-align: right;
+    min-width: 0;
+    word-break: break-word;
+  }
+}
+
+/// Optional centered hint copy below the sheet title.
+@mixin mobile-form-sheet-hint($block) {
+  .#{$block}__hint {
+    margin: 0 0 12px;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    color: var(--secondary-500);
+    text-align: center;
+  }
+}
+
+/// Text link button below a form (e.g. alternate flow entry).
+@mixin mobile-form-sheet-link-btn($block) {
+  .#{$block}__link-btn {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--primary-700);
+    cursor: pointer;
+    text-decoration: underline;
+    text-align: center;
+  }
+}

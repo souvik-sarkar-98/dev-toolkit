@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@ssdev-toolkit/comment-core": [
+        "../shared/comment-core/src/index.ts"
+      ]
+    }
+  }
+}

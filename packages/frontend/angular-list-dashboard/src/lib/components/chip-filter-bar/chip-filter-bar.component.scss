@@ -1,0 +1,57 @@
+.chip-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0 0 12px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.chip-bar__chip {
+  flex: 0 0 auto;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #ffffff;
+  color: var(--secondary-600);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--primary-200);
+    color: var(--primary-700);
+    background: var(--primary-50);
+  }
+
+  &--active {
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.28);
+  }
+}
+
+@media (max-width: 480px) {
+  .chip-bar {
+    gap: 6px;
+    padding-bottom: 10px;
+  }
+
+  .chip-bar__chip {
+    padding: 6px 10px;
+    font-size: 0.68rem;
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.angular.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@ssdev-toolkit/auth-core": [
+        "../shared/auth-core/src/index.ts"
+      ]
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@ssdev-toolkit/forms-core": [
+        "../shared/forms-core/src/index.ts"
+      ],
+      "@ssdev-toolkit/list-dashboard-core": [
+        "../shared/list-dashboard-core/src/index.ts"
+      ]
+    }
+  }
+}

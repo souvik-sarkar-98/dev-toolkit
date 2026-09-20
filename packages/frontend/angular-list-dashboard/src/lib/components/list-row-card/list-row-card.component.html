@@ -1,0 +1,26 @@
+<div class="list-row">
+  <div class="list-row__icon" [ngClass]="iconToneClass">
+    <ng-content select="[listRowIcon]"></ng-content>
+  </div>
+
+  <div class="list-row__content">
+    <div class="list-row__title">
+      <ng-content select="[listRowTitle]"></ng-content>
+    </div>
+    <div class="list-row__subtitle">
+      <ng-content select="[listRowSubtitle]"></ng-content>
+    </div>
+    <div class="list-row__meta">
+      <span><ng-content select="[listRowMetaLeft]"></ng-content></span>
+    </div>
+  </div>
+
+  <div class="list-row__aside">
+    <span class="list-row__badge" [ngClass]="badgeToneClass">
+      <ng-content select="[listRowBadge]"></ng-content>
+    </span>
+    <span class="list-row__date">
+      <ng-content select="[listRowMetaRight]"></ng-content>
+    </span>
+  </div>
+</div>

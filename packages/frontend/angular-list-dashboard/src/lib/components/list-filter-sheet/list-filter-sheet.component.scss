@@ -1,0 +1,33 @@
+@use '../../../styles/mobile-form-sheet' as sheet;
+
+@include sheet.mobile-form-sheet('list-filter-sheet', (
+  max-height-mobile: min(88vh, 560px),
+  title-row-margin-bottom: 1.25rem,
+  desktop-dialog: true,
+));
+
+.list-filter-sheet .cf-toggle-field {
+  gap: 0;
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.35);
+
+  mat-slide-toggle {
+    width: 100%;
+  }
+
+  .mdc-form-field {
+    margin-bottom: 0;
+  }
+
+  .mdc-label {
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 1.25;
+  }
+
+  .mdc-switch {
+    transform: scale(0.9);
+    transform-origin: left center;
+  }
+}

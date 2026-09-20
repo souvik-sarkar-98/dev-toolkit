@@ -1,0 +1,49 @@
+{
+  "name": "@ssdev-toolkit/angular-forms",
+  "version": "1.0.0",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "peerDependencies": {
+    "@angular/animations": "^19.0.0 || ^20.0.0 || ^21.0.0",
+    "@angular/cdk": "^19.0.0 || ^20.0.0 || ^21.0.0",
+    "@angular/common": "^19.0.0 || ^20.0.0 || ^21.0.0",
+    "@angular/core": "^19.0.0 || ^20.0.0 || ^21.0.0",
+    "@angular/forms": "^19.0.0 || ^20.0.0 || ^21.0.0",
+    "@angular/material": "^19.0.0 || ^20.0.0 || ^21.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "@ssdev-toolkit/forms-core": "*"
+  },
+  "sideEffects": false,
+  "main": "./dist/fesm2022/ssdev-toolkit-angular-forms.mjs",
+  "types": "./dist/types/ssdev-toolkit-angular-forms.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/ssdev-toolkit-angular-forms.d.ts",
+      "default": "./dist/fesm2022/ssdev-toolkit-angular-forms.mjs"
+    }
+  },
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json",
+    "lint": "tsc --noEmit -p tsconfig.lib.json"
+  },
+  "devDependencies": {
+    "@angular/animations": "^21.2.19",
+    "@angular/cdk": "^21.2.14",
+    "@angular/common": "^21.2.19",
+    "@angular/compiler": "^21.2.19",
+    "@angular/compiler-cli": "^21.2.19",
+    "@angular/core": "^21.2.19",
+    "@angular/forms": "^21.2.19",
+    "@angular/material": "^21.2.14",
+    "ng-packagr": "^21.2.0",
+    "typescript": "~5.9.3",
+    "@angular/platform-browser": "^21.2.19"
+  }
+}

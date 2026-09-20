@@ -4,8 +4,12 @@
 name: Release
 
 on:
+  workflow_dispatch:  
   push:
     branches: [main, stage]
+    paths-ignore:
+      - '.github/**'
+      - '.changeset/**'
 
 concurrency:
   group: release-${{ github.ref }}

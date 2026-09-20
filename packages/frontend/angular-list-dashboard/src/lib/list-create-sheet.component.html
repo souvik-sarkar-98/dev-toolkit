@@ -1,0 +1,22 @@
+<app-mobile-form-sheet
+  [open]="open"
+  [title]="title"
+  [hint]="hint"
+  [saving]="saving"
+  [saveLabel]="saveLabel"
+  (dismissed)="onDismissed()"
+  (save)="onSaveClick()">
+  <ng-content select="[listCreatePrefix]"></ng-content>
+  <cf-form
+    *ngIf="definition && formKey"
+    #createForm
+    [definition]="definition"
+    [initialValues]="initialValues"
+    [engineOptions]="engineOptions"
+    [hideHeading]="true"
+    [showSubmit]="false"
+    [idPrefix]="idPrefix"
+    (valuesChange)="valuesChange.emit($event)">
+  </cf-form>
+  <ng-content></ng-content>
+</app-mobile-form-sheet>

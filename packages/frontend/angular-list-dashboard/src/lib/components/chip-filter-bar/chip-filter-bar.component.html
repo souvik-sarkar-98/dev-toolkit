@@ -1,0 +1,12 @@
+<div class="chip-bar" role="tablist" aria-label="Filters">
+  <button
+    *ngFor="let chip of visibleChips"
+    type="button"
+    class="chip-bar__chip"
+    role="tab"
+    [class.chip-bar__chip--active]="chip.id === activeId"
+    [attr.aria-selected]="chip.id === activeId"
+    (click)="selectChip(chip.id)">
+    {{ chip.label }}
+  </button>
+</div>

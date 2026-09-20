@@ -1,0 +1,37 @@
+{
+  "name": "@ssdev-toolkit/nestjs-correspondence",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "clean": "rimraf dist && rimraf .turbo",
+    "prebuild": "npm run clean",
+    "build": "tsc -p tsconfig.build.json && node ../../../scripts/copy-assets.mjs",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@ssdev-toolkit/nestjs-core": "*",
+    "@ssdev-toolkit/nestjs-auth": "*",
+    "@ssdev-toolkit/nestjs-queue": "*",
+    "handlebars": "^4.7.8"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.angular.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@ssdev-toolkit/forms-core": [
+        "../shared/forms-core/src/index.ts"
+      ]
+    }
+  }
+}

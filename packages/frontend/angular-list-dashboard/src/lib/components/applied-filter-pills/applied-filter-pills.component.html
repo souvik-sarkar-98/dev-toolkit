@@ -1,0 +1,11 @@
+<div *ngIf="filters.length" class="applied-filter-pills">
+  <button
+    *ngFor="let filter of filters"
+    type="button"
+    class="applied-filter-pills__pill"
+    (click)="onRemove(filter.id)"
+    [attr.aria-label]="'Remove filter: ' + filter.label">
+    <span>{{ filter.label }}</span>
+    <span class="applied-filter-pills__close" aria-hidden="true">&times;</span>
+  </button>
+</div>

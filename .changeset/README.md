@@ -10,7 +10,7 @@ This monorepo uses [Changesets](https://github.com/changesets/changesets) for in
    npm run changeset
    ```
 
-   Select the affected `@ssdev-toolkit/nestjs-shared-*` packages and choose patch / minor / major.
+   Select the affected published packages (`@ssdev-toolkit/nestjs-*` or frontend adapters such as `@ssdev-toolkit/angular-forms`) and choose patch / minor / major. Do not add changesets for `packages/frontend/shared/*-core` — those are internal libraries, not npm packages.
 
 2. **Apply version bumps** — when ready to release (usually on merge to `main`):
 
@@ -33,7 +33,7 @@ This monorepo uses [Changesets](https://github.com/changesets/changesets) for in
 Packages publish as **public** to the npmjs registry (`registry.npmjs.org`). Anyone can install without a token:
 
 ```bash
-npm install @ssdev-toolkit/nestjs-shared-core
+npm install @ssdev-toolkit/nestjs-core
 ```
 
 Before the first publish, create/claim the `@ssdev-toolkit` org on [npmjs.com](https://www.npmjs.com/) and log in:
@@ -51,4 +51,4 @@ In CI, set `NPM_TOKEN` to an npm automation token with publish rights for that o
 - Internal package dependencies use `"*"` for npm workspace linking during development.
   `npm run version-packages` (Changesets) rewrites these to semver ranges (e.g. `^1.0.1`) in published manifests.
 - `changeset status` requires a git repository with a `main` branch synced to remote.
-- This repo publishes libraries only (`packages/*`). Host applications live in other repositories.
+- This repo publishes workspace libraries only (`packages/backend/*` and `packages/frontend/*` adapters). `packages/frontend/shared/` is not published. Host applications live in other repositories.

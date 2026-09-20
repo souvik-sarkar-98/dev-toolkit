@@ -1,0 +1,62 @@
+<app-mobile-form-sheet
+  [open]="open"
+  [title]="title"
+  [hint]="hint"
+  [showDefaultFooter]="false"
+  (dismissed)="onDismissed()">
+  <!--
+    Footer buttons project into the sheet's fixed action bar. Declared after the
+    stepper so stepStateChange from the child's reset/valuesChange is applied
+    before these bindings are evaluated in the same CD pass.
+  -->
+  <cf-form-stepper
+    *ngIf="open && stepperKey"
+    [steps]="steps"
+    [buildStepDefinition]="buildStepDefinition"
+    [resolveSteps]="resolveSteps"
+    [validateStep]="validateStep"
+    [prepareStep]="prepareStep"
+    [initialValues]="capturedInitialValues"
+    [engineOptions]="engineOptions"
+    [submitting]="saving"
+    [completeLabel]="completeLabel"
+    [idPrefix]="idPrefix"
+    [showInlineActions]="false"
+    (validationError)="validationError.emit($event)"
+    (stepChange)="onStepChange($event)"
+    (stepStateChange)="onStepState($event)"
+    (completed)="completed.emit($event)"
+    (cancelled)="onDismissed()">
+    <ng-container *ngFor="let entry of customStepEntries; trackBy: trackCustomStep">
+      <ng-template [cfFormStepperStep]="entry.stepId">
+        <uld-list-form-custom-step-host
+          [rendererKey]="entry.rendererKey"
+          [data]="customStepDataFor(entry.stepId)"
+          (dataChange)="onCustomStepData(entry.stepId, $event)"
+          (ready)="onCustomStepHostReady($event)"
+          (closed)="onCustomStepHostClosed($event)">
+        </uld-list-form-custom-step-host>
+      </ng-template>
+    </ng-container>
+    <ng-content></ng-content>
+  </cf-form-stepper>
+
+  <button
+    sheetFooterActions
+    *ngIf="open && stepperKey && (!isFirstStep || allowCancel)"
+    type="button"
+    class="app-btn app-btn--ghost"
+    [disabled]="saving || preparing"
+    (click)="onBack()">
+    {{ isFirstStep ? cancelLabel : backLabel }}
+  </button>
+  <button
+    sheetFooterActions
+    *ngIf="open && stepperKey"
+    type="button"
+    class="app-btn app-btn--primary"
+    [disabled]="saving || preparing"
+    (click)="onNext()">
+    {{ nextLabelText }}
+  </button>
+</app-mobile-form-sheet>

@@ -1,0 +1,41 @@
+/* Bootstrap-oriented custom form layout (import once in the host app). */
+.cf-phone-input-group {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: 100%;
+  isolation: isolate;
+}
+
+.cf-phone-input-group > .form-select,
+.cf-phone-input-group > .cf-phone-country,
+.cf-phone-input-group > .cf-phone-country-static,
+.cf-phone-input-group > .input-group-text {
+  flex: 0 0 25%;
+  max-width: 25%;
+  min-width: 0;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.cf-phone-input-group > .cf-phone-country-static {
+  display: flex;
+  align-items: center;
+  padding: 0.375rem 0.5rem;
+  background-color: var(--bs-tertiary-bg, #f8f9fa);
+  border: var(--bs-border-width, 1px) solid var(--bs-border-color, #dee2e6);
+}
+
+.cf-phone-input-group > .form-control,
+.cf-phone-input-group > .cf-phone-national {
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+  margin-left: calc(var(--bs-border-width, 1px) * -1);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}

@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Universal List Dashboard — Developer Guide</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --surface-2: #243044;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #f97316;
+      --accent-dim: rgba(249, 115, 22, 0.15);
+      --code-bg: #0d1117;
+      --link: #38bdf8;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --radius: 10px;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: "Cascadia Code", "Fira Code", Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+      nav.sidebar { position: static; height: auto; }
+    }
+
+    nav.sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 16px;
+    }
+
+    nav.sidebar h1 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      margin-bottom: 4px;
+    }
+
+    nav.sidebar .subtitle {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    nav.sidebar ul {
+      list-style: none;
+    }
+
+    nav.sidebar li { margin-bottom: 2px; }
+
+    nav.sidebar a {
+      display: block;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    nav.sidebar a:hover,
+    nav.sidebar a.active {
+      background: var(--accent-dim);
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    main {
+      padding: 40px 48px 80px;
+      max-width: 960px;
+    }
+
+    @media (max-width: 640px) {
+      main { padding: 24px 20px 60px; }
+    }
+
+    section {
+      margin-bottom: 48px;
+      scroll-margin-top: 24px;
+    }
+
+    h2 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      color: #fff;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 24px 0 10px;
+      color: #f1f5f9;
+    }
+
+    h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 16px 0 8px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    p { margin-bottom: 12px; color: #cbd5e1; }
+
+    ul, ol {
+      margin: 0 0 14px 20px;
+      color: #cbd5e1;
+    }
+
+    li { margin-bottom: 4px; }
+
+    .lead {
+      font-size: 1.05rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: var(--surface);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 0.9rem;
+    }
+
+    .callout.info { border-color: var(--link); }
+    .callout.warn { border-color: var(--warning); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 20px;
+      font-size: 0.88rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--surface-2);
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    td { background: var(--surface); color: #cbd5e1; }
+
+    td code, th code {
+      font-size: 0.82rem;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      overflow-x: auto;
+      margin: 12px 0 18px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: #e6edf3;
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.85em;
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #f0abfc;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    .kw { color: #ff7b72; }
+    .ty { color: #79c0ff; }
+    .fn { color: #d2a8ff; }
+    .str { color: #a5d6ff; }
+    .cm { color: #8b949e; font-style: italic; }
+
+    .diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin: 16px 0;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.5;
+      overflow-x: auto;
+      white-space: pre;
+      color: #94a3b8;
+    }
+
+    .checklist {
+      list-style: none;
+      margin-left: 0;
+    }
+
+    .checklist li {
+      padding: 8px 0 8px 28px;
+      position: relative;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+    }
+
+    .checklist li::before {
+      content: "☐";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+
+    .tier-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 16px 0;
+    }
+
+    .tier-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .tier-card h4 {
+      margin: 0 0 8px;
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--accent);
+      font-size: 1rem;
+    }
+
+    .tier-card p {
+      font-size: 0.85rem;
+      margin: 0;
+    }
+
+    footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="sidebar">
+      <h1>Universal List Dashboard</h1>
+      <p class="subtitle">Developer guide for config-driven list · filter · detail · create pages</p>
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#quickstart">Quick start</a></li>
+        <li><a href="#file-layout">File layout</a></li>
+        <li><a href="#dashboard-config">Dashboard config</a></li>
+        <li><a href="#list-config">List &amp; filters</a></li>
+        <li><a href="#detail-config">Detail &amp; edit</a></li>
+        <li><a href="#view-sections">View sections</a></li>
+        <li><a href="#create-tiers">Create tiers</a></li>
+        <li><a href="#route-sync">Route sync</a></li>
+        <li><a href="#dashboard-page">Dashboard page</a></li>
+        <li><a href="#loading-ux">Loading UX</a></li>
+        <li><a href="#extensions">Extensions</a></li>
+        <li><a href="#finance-examples">Finance examples</a></li>
+        <li><a href="#api-reference">API reference</a></li>
+        <li><a href="#related">Related docs</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <section id="overview">
+        <h2>Overview</h2>
+        <p class="lead">
+          The <strong>Universal List Dashboard</strong> powers finance dashboards (donations, expenses, accounts, donors, earnings)
+          with a single, config-driven pattern: infinite scroll list, chip tabs, filter sheet, detail bottom sheet, and optional create/bulk-edit flows.
+        </p>
+        <div class="callout">
+          <strong>Signed-off pilot:</strong>
+          <code>apps/internal-app/src/app/feature/finance/donation/</code>
+          — copy this four-folder layout (<code>config/</code>, <code>data/</code>, <code>domain/</code>, <code>page/</code>)
+          when migrating other entities. Bind <code>ListDashboardConfig</code> to <code>&lt;na-list-dashboard&gt;</code>
+          (Angular) or <code>&lt;ListDashboard&gt;</code>
+          (<code>@ssdev-toolkit/react-list-dashboard</code>).
+          See <code>.cursor/rules/reusable-first-migrations.mdc</code>.
+        </div>
+        <div class="callout">
+          <strong>Source of truth:</strong>
+          <code>@ssdev-toolkit/angular-list-dashboard</code> and
+          <code>@ssdev-toolkit/react-list-dashboard</code> (published UI adapters) plus
+          internal <code>packages/frontend/shared/list-dashboard-core</code> (types/configs, not an npm package).<br />
+          Import from the adapter for your framework; core types are re-exported for convenience.
+        </div>
+        <p>Domain code supplies <em>pure TypeScript config factories</em>. Shared controllers and components handle state, URL sync, and UI.</p>
+        <table>
+          <thead>
+            <tr><th>Capability</th><th>Config hook</th><th>UI component</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Infinite list + chips</td><td><code>FilteredListPageConfig</code></td><td><code>app-filtered-list-page</code></td></tr>
+            <tr><td>Filter sheet</td><td><code>buildFilterFormDefinition</code>, …</td><td><code>app-list-filter-sheet</code></td></tr>
+            <tr><td>Detail view / edit</td><td><code>ListDetailPageConfig</code></td><td><code>app-list-detail-sheet</code></td></tr>
+            <tr><td>Create (form)</td><td><code>create.kind: 'form'</code></td><td><code>app-list-create-sheet</code></td></tr>
+            <tr><td>Create (stepper)</td><td><code>create.kind: 'stepper'</code></td><td><code>app-list-create-stepper-sheet</code></td></tr>
+            <tr><td>Bulk edit</td><td><code>bulkEdit</code></td><td>Second <code>app-list-detail-sheet</code></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="architecture">
+        <h2>Architecture</h2>
+        <p><code>FilteredListDashboardController</code> is the facade. It wires list, detail, create, and bulk-edit sub-controllers from one <code>FilteredListDashboardConfig</code>.</p>
+        <div class="diagram">FilteredListDashboardConfig
+        │
+        ├── createListPageAdapter(config.list)  ──► FilteredListPageController
+        ├── createDetailPageAdapter(config.detail) ──► ListDetailPageController
+        ├── ListCreatePageController            [if create]
+        └── BulkEditPageController              [if bulkEdit]
+
+init({ route, router, refData, config, hooks })
+        │
+        ├── ListRouteSync          chip + filter criteria ↔ URL
+        ├── ListDetailRouteSync    ?donationId=…&amp;edit=true
+        └── ListCreateRouteSync    ?create=true + presets
+
+Template binds controllers to shared components — domain pages stay thin.</div>
+
+        <h3>Key controllers</h3>
+        <table>
+          <thead>
+            <tr><th>Controller</th><th>Responsibility</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>FilteredListDashboardController</code></td><td>Facade; exposes <code>showCreateFab</code>, create stepper hooks, shared context</td></tr>
+            <tr><td><code>FilteredListPageController</code></td><td>Chips, search, filters, pagination, selection, list reload</td></tr>
+            <tr><td><code>ListDetailPageController</code></td><td>Detail sheet open/close, view sections, edit mode, documents load, save</td></tr>
+            <tr><td><code>ListCreatePageController</code></td><td>Create sheet open/close, route presets, pending deep links</td></tr>
+            <tr><td><code>BulkEditPageController</code></td><td>Multi-select edit overlay; reuses detail edit hooks</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="quickstart">
+        <h2>Quick start — new entity checklist</h2>
+        <ol class="checklist">
+          <li>Create domain entity + data source with paginated fetch</li>
+          <li>Add <code>*-list.config.ts</code> — criteria type, chips, filter hooks, <code>loadPage</code></li>
+          <li>Add <code>*-list.mapper.ts</code> — entity → <code>ListRowItem</code></li>
+          <li>Add <code>forms/*-filter.form-definition.ts</code></li>
+          <li>Add <code>*-detail.config.ts</code> + <code>*-list-detail.mapper.ts</code></li>
+          <li>Add create/update form definitions as needed</li>
+          <li>Add <code>*-dashboard.config.ts</code> composing list + detail + create + bulkEdit</li>
+          <li>Add thin <code>*-dashboard.component.ts/html</code> — init controller, bind template</li>
+          <li>Wire route in module; set <code>detailRouteSync.idParam</code></li>
+        </ol>
+      </section>
+
+      <section id="file-layout">
+        <h2>Recommended file layout</h2>
+        <pre><code>feature/finance/{entity}/
+├── config/
+│   ├── {entity}-list.config.ts       <span class="cm">// FilteredListPageConfig factory</span>
+│   ├── {entity}-detail.config.ts     <span class="cm">// ListDetailPageConfig factory</span>
+│   └── {entity}-dashboard.config.ts  <span class="cm">// FilteredListDashboardConfig factory</span>
+├── mappers/
+│   ├── {entity}-list.mapper.ts
+│   └── {entity}-list-detail.mapper.ts
+├── forms/
+│   ├── {entity}-filter.form-definition.ts
+│   ├── {entity}-create.form-definition.ts
+│   └── {entity}-update.form-definition.ts
+├── services/
+│   ├── {entity}-create.util.ts       <span class="cm">// save + step validation</span>
+│   └── {entity}-dashboard.permissions.ts
+└── pages/{entity}-dashboard/
+    ├── {entity}-dashboard.component.ts
+    └── {entity}-dashboard.component.html</code></pre>
+      </section>
+
+      <section id="dashboard-config">
+        <h2>Dashboard config</h2>
+        <p>Top-level shape: <code>FilteredListDashboardConfig&lt;TEntity, TCriteria&gt;</code></p>
+        <pre><code><span class="kw">export function</span> <span class="fn">createDonationDashboardConfig</span>(
+  deps: DonationDashboardConfigDeps,
+): <span class="ty">FilteredListDashboardConfig</span>&lt;Donation, DonationListFilterCriteria&gt; {
+  <span class="kw">return</span> {
+    list: <span class="fn">createDonationListPageConfig</span>({ ... }),
+    detail: <span class="fn">createDonationDetailPageConfig</span>(deps.donationData, { ... }),
+    create: { kind: <span class="str">'stepper'</span>, ... },
+    bulkEdit: { ... },
+    resolvePermissions: () => <span class="fn">resolveDonationPermissions</span>(deps.authorization),
+    detailRouteSync: { idParam: <span class="str">'donationId'</span> },
+    searchPlaceholder: <span class="str">'Search donations…'</span>,
+    filterSheetTitle: <span class="str">'Filter donations'</span>,
+    selectableWhen: ctx => <span class="fn">canSelectDonations</span>(ctx),
+    canUpdateEntity: ctx => <span class="fn">canUpdateOutstandingDonations</span>(ctx),
+  };
+}</code></pre>
+
+        <h3>Permissions &amp; FAB</h3>
+        <p><code>create.canOpen(ctx)</code> controls:</p>
+        <ul>
+          <li>Floating action button visibility (<code>dashboard.showCreateFab</code>)</li>
+          <li>Whether create sheet can open</li>
+          <li>Whether <code>?create=true</code> deep link is honoured</li>
+        </ul>
+        <p><code>resolvePermissions()</code> returns a permissions object passed into all <code>canOpen</code> / <code>when</code> callbacks via <code>FilteredListDashboardContext</code>.</p>
+      </section>
+
+      <section id="list-config">
+        <h2>List &amp; filters</h2>
+        <p><code>FilteredListPageConfig&lt;TCriteria&gt;</code> defines chips, criteria, filters, and data loading.</p>
+
+        <h3>Required hooks</h3>
+        <table>
+          <thead>
+            <tr><th>Hook</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>chips</code>, <code>defaultChip</code>, <code>isValidChip</code></td><td>Primary tab bar</td></tr>
+            <tr><td><code>cloneCriteria</code>, <code>getDefaultCriteriaForChip</code></td><td>Immutable criteria per chip</td></tr>
+            <tr><td><code>buildFilterFormDefinition</code></td><td><code>cf-form</code> definition for filter sheet</td></tr>
+            <tr><td><code>criteriaToFilterFormValues</code></td><td>Criteria → form values when sheet opens</td></tr>
+            <tr><td><code>filterFormValuesToCriteria</code></td><td>Applied filters → criteria</td></tr>
+            <tr><td><code>buildAppliedFilters</code></td><td>Removable pills under chip bar</td></tr>
+            <tr><td><code>countActiveSheetFilters</code></td><td>Badge on filter button</td></tr>
+            <tr><td><code>removeFilterById</code></td><td>Pill dismiss handler</td></tr>
+            <tr><td><code>loadPage(query, ctx)</code></td><td>Observable of paginated <code>ListRowItem[]</code></td></tr>
+          </tbody>
+        </table>
+
+        <h3>Route sync for filters</h3>
+        <pre><code>route: {
+  chipConfig: { defaultChip: <span class="str">'all'</span>, normalize: chip => ... },
+  filterBindings: [
+    { param: <span class="str">'status'</span>, criteriaKey: <span class="str">'status'</span>, type: <span class="str">'csv'</span> },
+    { param: <span class="str">'fromDate'</span>, criteriaKey: <span class="str">'fromDate'</span>, type: <span class="str">'string'</span> },
+    { param: <span class="str">'guestOnly'</span>, criteriaKey: <span class="str">'guestOnly'</span>, type: <span class="str">'boolean'</span> },
+  ],
+}</code></pre>
+
+        <h3>Shared filter field builders</h3>
+        <p>Use helpers from <code>feature/finance/forms/shared/filter-field-groups.ts</code>:</p>
+        <ul>
+          <li><code>buildDateRangeFilterField</code></li>
+          <li><code>buildMemberAutocompleteField</code></li>
+          <li><code>buildStatusMultiselectField</code></li>
+        </ul>
+
+        <h3>Async filter options</h3>
+        <p>Load member/donor options in the dashboard page, then call:</p>
+        <pre><code>dashboard.listPageAdapter.setAsyncFilterOptions({ memberOptions, donorOptions });</code></pre>
+        <p>Filter form builders read <code>ctx.asyncFilterOptions</code> in <code>buildFilterFormDefinition</code>.</p>
+      </section>
+
+      <section id="detail-config">
+        <h2>Detail &amp; edit</h2>
+        <p><code>ListDetailPageConfig&lt;TEntity&gt;</code> drives the detail bottom sheet.</p>
+
+        <h3>View mode flow</h3>
+        <ol>
+          <li>Row click → <code>detailPage.openEntity(entity)</code></li>
+          <li><code>getTitle(entity)</code> sets sheet title</li>
+          <li><code>buildViewSections(entity, refData)</code> renders sections</li>
+          <li>If <code>documents.loadSection</code> configured → async fetch → replace documents section</li>
+          <li><code>primaryAction.when(ctx)</code> → footer "Edit" (or custom label)</li>
+        </ol>
+
+        <h3>Titles vs ids</h3>
+        <p>
+          The detail sheet writes the open entity into the URL
+          (<code>detailRouteSync.idParam</code>) and reads it back on reload, so the value it
+          writes must be the id <code>fetchById</code> accepts. <code>getEntityId(entity)</code>
+          supplies that id and falls back to <code>getTitle</code> when omitted — which is only
+          safe when the title <em>is</em> the id (donations, expenses, earnings). Any config whose
+          title is a display value (member name, donor name, project name, transaction ref)
+          must implement <code>getEntityId</code>, otherwise deep links resolve to a name and the
+          sheet closes itself on reload. The same id is used for
+          <code>documents.loadSection</code> unless <code>documents.resolveEntityId</code>
+          overrides it.
+        </p>
+        <pre><code>{
+  getTitle: entity => entity.fullName || entity.email,   <span class="cm">// shown in the sheet header</span>
+  getEntityId: entity => entity.id,                      <span class="cm">// written to ?memberId=…</span>
+  documents: { resolveEntityId: entity => entity.id, ... },
+}</code></pre>
+
+        <h3>Hero slot</h3>
+        <p>
+          <code>&lt;ng-template listDetailHero let-entity&gt;</code> renders above the detail body
+          in view mode — avatars, status badges, role chips. Use
+          <code>listDetailFooterActions</code> only for buttons; projecting a hero there pushes it
+          below the sections.
+        </p>
+
+        <h3>Edit mode flow</h3>
+        <ol>
+          <li>Primary action or <code>?edit=true</code> deep link → <code>enterEdit()</code></li>
+          <li><code>buildEditSummary</code>, <code>entityToEditValues</code>, <code>buildEditForm</code></li>
+          <li>Optional <code>prepareEdit(onReady)</code> for async options (e.g. payable accounts)</li>
+          <li><code>onEditValuesChange</code> — toggle document upload, field errors</li>
+          <li><code>onEditSave(values)</code> → <code>validateBeforeSave</code> → <code>save</code> → list row refresh</li>
+        </ol>
+        <p>
+          <code>edit.kind</code> and <code>edit.steps</code> are re-read every time edit opens, so a
+          config may expose them as getters to switch between the single form and the stepper per
+          chip or per entity.
+        </p>
+
+        <pre><code><span class="cm">// donation-detail.config.ts (abbreviated)</span>
+{
+  getTitle: entity => entity.id,
+  buildViewSections: (entity, refData) =>
+    <span class="fn">buildDonationListDetailSections</span>(entity, refData),
+  documents: {
+    buildLoadingSection: () => <span class="fn">buildDonationDocumentsLoadingSection</span>(),
+    loadSection: id => donationData.fetchDocuments(id).pipe(
+      map(docs => <span class="fn">buildDonationDocumentsSection</span>(docs)),
+    ),
+  },
+  fetchById: id => donationData.fetchDonationById(id, scope),
+  findInList: (items, id) => items.find(...),
+  primaryAction: {
+    label: <span class="str">'Edit'</span>,
+    when: ctx => ctx.activeChip() === <span class="str">'all_outstanding'</span> &amp;&amp; ctx.canUpdate(),
+  },
+  edit: {
+    buildEditSummary, entityToEditValues, buildEditForm,
+    prepareEdit, onEditValuesChange, validateBeforeSave, save,
+  },
+}</code></pre>
+
+        <div class="callout info">
+          <strong>Documents are the only built-in async section.</strong>
+          Other section types are built synchronously in <code>buildViewSections</code>.
+          For async non-document data, either embed in the entity fetch or add a custom overlay.
+        </div>
+      </section>
+
+      <section id="view-sections">
+        <h2>View sections</h2>
+        <p>Return <code>ListDetailSection[]</code> from <code>buildViewSections</code> or mappers. Three section types are supported.</p>
+
+        <h3>1. Key-value (<code>type: 'key_value'</code>)</h3>
+        <p>Collapsible titled grid of label/value rows. Default field format is plain text.</p>
+        <pre><code><span class="kw">import</span> {
+  detailTextField,
+  detailHtmlField,
+  detailKeyValueSection,
+} <span class="kw">from</span> <span class="str">'…/list-detail.helpers'</span>;
+
+<span class="fn">detailKeyValueSection</span>(<span class="str">'summary'</span>, <span class="str">'Summary'</span>, [
+  <span class="fn">detailTextField</span>(<span class="str">'Amount'</span>, formatCurrency(entity.amount)),
+  <span class="fn">detailHtmlField</span>(
+    <span class="str">'Receipt'</span>,
+    <span class="str">'&lt;a href="https://…" target="_blank" rel="noopener"&gt;View receipt&lt;/a&gt;'</span>,
+  ),
+]);</code></pre>
+        <p>Set <code>format: 'html'</code> on any <code>ListDetailField</code> to render sanitized HTML (links, emphasis, lists). Angular strips scripts and event handlers.</p>
+
+        <h3>2. Documents (<code>type: 'documents'</code>)</h3>
+        <p>Renders <code>app-document-list</code>. Prefer configuring via <code>ListDetailPageConfig.documents</code> for automatic loading state.</p>
+
+        <h3>3. Content (<code>type: 'content'</code>)</h3>
+        <p>Full-width instruction/notice block — not a label/value pair.</p>
+        <pre><code><span class="kw">import</span> { detailContentSection } <span class="kw">from</span> <span class="str">'…/list-detail.helpers'</span>;
+
+<span class="fn">detailContentSection</span>(
+  <span class="str">'banking-note'</span>,
+  <span class="str">'&lt;p&gt;Verify account details with the holder before saving.&lt;/p&gt;'</span>,
+  { title: <span class="str">'Instructions'</span> },  <span class="cm">// optional collapsible title</span>
+);</code></pre>
+
+        <h3>Helpers reference</h3>
+        <table>
+          <thead>
+            <tr><th>Function</th><th>Returns</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>detailTextField(label, value)</code></td><td><code>ListDetailField</code> with <code>format: 'text'</code></td></tr>
+            <tr><td><code>detailHtmlField(label, html)</code></td><td><code>ListDetailField</code> with <code>format: 'html'</code></td></tr>
+            <tr><td><code>detailKeyValueSection(id, title, fields, collapsed?)</code></td><td>Key-value section</td></tr>
+            <tr><td><code>detailContentSection(id, html, options?)</code></td><td>Content section</td></tr>
+          </tbody>
+        </table>
+        <p>HTML fields also work in <code>buildEditSummary</code> for edit-mode summary rows.</p>
+      </section>
+
+      <section id="create-tiers">
+        <h2>Create tiers</h2>
+        <p>Set <code>create.kind</code> in dashboard config. The framework picks the host component.</p>
+
+        <div class="tier-grid">
+          <div class="tier-card">
+            <h4>form</h4>
+            <p>Single <code>cf-form</code> in <code>app-list-create-sheet</code>. Best for short creates (guest donor, earning).</p>
+          </div>
+          <div class="tier-card">
+            <h4>stepper</h4>
+            <p>Multi-step via <code>app-list-create-stepper-sheet</code> + <code>CfFormStepperComponent</code>. Used for account, donation, expense create.</p>
+          </div>
+          <div class="tier-card">
+            <h4>component</h4>
+            <p>Escape hatch — domain owns the sheet UI entirely. Route sync still works via <code>canOpen</code>.</p>
+          </div>
+        </div>
+
+        <h3>Form tier</h3>
+        <pre><code>create: {
+  kind: <span class="str">'form'</span>,
+  route: { actionParam: <span class="str">'create'</span> },
+  canOpen: ctx => isGuestChip(ctx.activeChip) &amp;&amp; perms.showCreateFab,
+  buildCreateForm: () => <span class="fn">buildDonorGuestCreateFormDefinition</span>(),
+  defaultCreateValues: () => <span class="fn">defaultDonorGuestCreateFormValues</span>(),
+  validateBeforeCreate: values => ...,
+  createSave: values => donorData.createGuestDonor(...),
+}</code></pre>
+
+        <h3>Stepper tier</h3>
+        <pre><code>create: {
+  kind: <span class="str">'stepper'</span>,
+  route: {
+    actionParam: <span class="str">'create'</span>,
+    presets: [
+      { param: <span class="str">'forEventId'</span>, stateKey: <span class="str">'forEventId'</span>, type: <span class="str">'string'</span> },
+    ],
+  },
+  canOpen: ctx => perms.showCreateFab,
+  steps: DONATION_CREATE_STEPPER_STEPS,
+  buildStepDefinition: (stepId, values, ctx) =>
+    <span class="fn">buildDonationCreateStepDefinition</span>(stepId, values, ctx),
+  resolveSteps: values => <span class="fn">resolveDonationCreateSteps</span>(values),
+  validateStep: (stepId, values, ctx) =>
+    <span class="fn">validateDonationCreateStepWithContext</span>(stepId, values, ctx),
+  defaultCreateValues: (refData, presets) => ...,
+  createSave: (values, ctx) => <span class="fn">saveDonationCreate</span>(values, ctx),
+}</code></pre>
+
+        <h3>Loading a step on demand</h3>
+        <p><code>prepareStep</code> is awaited before a step is entered, so a step whose form depends on an earlier answer can fetch just that variant instead of preloading every one. Next/Back stay disabled while it runs; a rejection keeps the user on the current step and shows the validation banner.</p>
+        <pre><code>prepareStep: <span class="kw">async</span> (stepId, values, ctx) => {
+  <span class="kw">if</span> (stepId !== <span class="str">'request_details'</span>) <span class="kw">return</span>;
+  <span class="kw">await</span> <span class="fn">loadStartForm</span>(<span class="fn">String</span>(values[<span class="str">'definitionId'</span>]));
+},</code></pre>
+
+        <h3>Custom stepper step (expense line items)</h3>
+        <p>Inject a domain component via <code>ng-template cfFormStepperStep="items"</code> inside <code>app-list-create-stepper-sheet</code>. Pass extra state with:</p>
+        <pre><code>dashboard.setCreateContextExtras({ lineItemRows: [...] });</code></pre>
+
+        <h3>Template wiring</h3>
+        <pre><code>&lt;app-list-create-sheet
+  *ngIf="dashboard.hasCreateForm"
+  [open]="dashboard.createPage.open"
+  [definition]="dashboard.createDefinition"
+  ...
+/&gt;
+
+&lt;app-list-create-stepper-sheet
+  *ngIf="dashboard.hasCreateStepper"
+  [open]="dashboard.createPage.open"
+  [steps]="dashboard.createSteps"
+  [buildStepDefinition]="dashboard.buildCreateStepDefinition"
+  ...
+/&gt;
+
+&lt;app-floating-action-button
+  *ngIf="dashboard.showCreateFab"
+  (buttonClick)="dashboard.createPage.openSheet({ syncRoute: true })" /&gt;</code></pre>
+      </section>
+
+      <section id="route-sync">
+        <h2>Route sync</h2>
+        <table>
+          <thead>
+            <tr><th>Concern</th><th>Query params</th><th>Config</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Active chip + filters</td><td><code>?chip=all&amp;status=…</code></td><td><code>list.route</code></td></tr>
+            <tr><td>Detail deep link</td><td><code>?donationId=abc</code></td><td><code>detailRouteSync.idParam</code></td></tr>
+            <tr><td>Edit deep link</td><td><code>?donationId=abc&amp;edit=true</code></td><td>Automatic via detail route sync</td></tr>
+            <tr><td>Create deep link</td><td><code>?create=true</code></td><td><code>create.route.actionParam</code></td></tr>
+            <tr><td>Create presets</td><td><code>?create=true&amp;forEventId=…</code></td><td><code>create.route.presets</code></td></tr>
+          </tbody>
+        </table>
+        <p>After list loads, controllers call <code>tryOpenPending()</code> to honour deep links without racing the initial fetch.</p>
+      </section>
+
+      <section id="dashboard-page">
+        <h2>Dashboard page template</h2>
+        <p>Every finance dashboard follows the same shell pattern:</p>
+        <pre><code><span class="cm">// component.ts</span>
+<span class="kw">protected readonly</span> dashboard = <span class="kw">new</span> <span class="ty">FilteredListDashboardController</span>&lt;Donation&gt;();
+
+<span class="fn">ngOnInit</span>() {
+  <span class="kw">this</span>.dashboard.init({
+    route: <span class="kw">this</span>.route,
+    router: <span class="kw">this</span>.router,
+    refData: <span class="fn">readRouteRefData</span>(<span class="kw">this</span>.route),
+    config: <span class="fn">createDonationDashboardConfig</span>(deps),
+    hooks: {
+      mapEntityToListRow: entity => <span class="fn">mapDonationToListRow</span>(entity, refData),
+      onSaveError: () => modalService.openNotificationModal(...),
+      setFormValue: (key, val) => detailSheet?.cfForm?.setValue(key, val),
+    },
+  });
+}</code></pre>
+
+        <h3>Template slots on <code>app-filtered-list-page</code></h3>
+        <table>
+          <thead>
+            <tr><th>Slot</th><th>Use</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>#rowTemplate</code></td><td>Custom row rendering (<code>app-infinite-list-row</code>)</td></tr>
+            <tr><td><code>bulkActions</code></td><td>Toolbar buttons when rows selected</td></tr>
+            <tr><td><code>listOverlays</code></td><td>Detail sheets, create sheets, domain overlays</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Detail sheet inputs (common)</h3>
+        <pre><code>&lt;app-list-detail-sheet
+  [open]="dashboard.detailPage.open"
+  [mode]="dashboard.detailPage.mode"
+  [title]="dashboard.detailPage.title"
+  [sections]="dashboard.detailPage.sections"
+  [loading]="dashboard.detailPage.loading"
+  [primaryActionLabel]="dashboard.detailPage.primaryActionLabel"
+  [editSummary]="dashboard.detailPage.editSummary"
+  [editDefinition]="dashboard.detailPage.editDefinition"
+  (primaryAction)="dashboard.detailPage.enterEdit()"
+  (editSave)="dashboard.detailPage.onEditSave($event)"
+  ...
+&gt;
+  &lt;button detailFooterActions *ngIf="showPayNow"&gt;Pay Now&lt;/button&gt;
+&lt;/app-list-detail-sheet&gt;</code></pre>
+      </section>
+
+      <section id="loading-ux">
+        <h2>Loading UX</h2>
+        <p class="lead">
+          The Universal List Dashboard uses a <strong>two-tier loading model</strong>: route landing shows the dashboard shell immediately;
+          all in-framework loads use scoped, non-blocking indicators in the surface being updated.
+        </p>
+
+        <h3>Tier 1 — Route landing</h3>
+        <table>
+          <thead>
+            <tr><th>Load</th><th>Blocking?</th><th>Where feedback shows</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>ref_data</code> route resolver</td><td>Router blocks navigation</td><td>No in-component spinner — resolver completes before mount</td></tr>
+            <tr><td>First list page (<code>listLoading</code>, no rows yet)</td><td>No</td><td>Panel-centered spinner inside list card only; chips + search stay visible</td></tr>
+            <tr><td>Async filter/create options</td><td>No</td><td>Field-level when user opens filter/create sheet</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Tier 2 — In-framework loads</h3>
+        <table>
+          <thead>
+            <tr><th>User action</th><th>Controller / component</th><th>UX</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Chip / filter / search refresh</td><td><code>FilteredListPageController</code> + <code>app-filtered-infinite-list</code></td><td>Stale rows stay visible; top refresh bar “Updating…”; rows dimmed until fetch completes. Items are <em>not</em> cleared before new data arrives.</td></tr>
+            <tr><td>Infinite scroll</td><td><code>listLoadingMore</code></td><td>Footer inline spinner + “Loading more…”</td></tr>
+            <tr><td>Row tap → detail</td><td><code>ListDetailPageController.openEntity</code></td><td>Instant — sections from row payload; no full-sheet spinner</td></tr>
+            <tr><td>Deep link <code>?donationId=</code></td><td><code>tryOpenPending</code> → <code>fetchById</code></td><td>Sheet opens with body spinner until entity loads; <code>detailPage.loading = true</code></td></tr>
+            <tr><td>Documents async</td><td><code>ListDetailDocumentsSection.loading</code></td><td>Section-level spinner in <code>app-list-detail-sections</code></td></tr>
+            <tr><td>Save / create</td><td>Detail/create sheets</td><td>Button “Saving…” / disabled — not a list-level spinner</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Derived list states (<code>app-filtered-infinite-list</code>)</h3>
+        <pre><code>initialLoading = loading &amp;&amp; items.length === 0   <span class="cm">// first fetch</span>
+refreshing     = loading &amp;&amp; items.length &gt; 0    <span class="cm">// chip/filter/search reload</span>
+loadingMore    = append pagination               <span class="cm">// footer spinner</span></code></pre>
+
+        <div class="callout info">
+          <strong>Do not</strong> use a full-page blocking spinner on filter changes.
+          <strong>Do not</strong> hide the chip bar during <code>listLoading</code>.
+          Detail sheet body spinner shows only when <code>loading &amp;&amp; !sections.length</code> — existing sections (including document loading placeholders) remain visible.
+        </div>
+
+        <h3>Global HTTP loader</h3>
+        <p>
+          The legacy <code>ng-http-loader</code> full-page overlay is <strong>disabled</strong> in
+          <code>secured-layout</code>. Loading feedback comes only from in-panel / in-sheet indicators above.
+        </p>
+      </section>
+
+      <section id="extensions">
+        <h2>Extensions &amp; escape hatches</h2>
+        <p>Not everything fits the three create tiers or standard detail sheet. These patterns are intentional:</p>
+
+        <table>
+          <thead>
+            <tr><th>Pattern</th><th>Example</th><th>Where</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Detail footer actions</td><td>Pay Now, Submit, Approve</td><td><code>detailFooterActions</code> slot on detail sheet</td></tr>
+            <tr><td>Secondary detail controller</td><td>Donor drill-down from donation row link</td><td>Second <code>ListDetailPageController</code> + sheet</td></tr>
+            <tr><td>Domain sheets (non-create)</td><td>Account transfer, banking UPI</td><td><code>listOverlays</code> + <code>MobileFormSheetComponent</code></td></tr>
+            <tr><td>Bulk custom UI</td><td>Donor merge</td><td><code>bulkActions</code> + <code>app-donor-merge-sheet</code></td></tr>
+            <tr><td>Draft/resubmit edit</td><td>Expense sent-back edit</td><td>Dedicated <code>expense-create-sheet</code> (stepper), separate from list create</td></tr>
+            <tr><td>Legacy detailed view bridge</td><td>Transaction detail</td><td><code>mapDetailedViewsToListDetailSections()</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout warn">
+          Prefer config + shared components first. Reach for a dedicated component sheet only when you need custom UI (radio merge, file upload flows, multi-controller interactions) that cannot be expressed as form/stepper config.
+        </div>
+
+        <h3>Action forms (config-driven detail/bulk/floating forms)</h3>
+        <p>
+          Named entries under <code>actionForms</code> replace page-owned sheets for
+          &ldquo;do one thing to this entity&rdquo; flows. An action binds to one with
+          <code>actionFormId</code>; the dashboard renders the sheet itself
+          (<code>kind: 'form'</code> &rarr; single form + optional documents,
+          <code>kind: 'stepper'</code> &rarr; shared stepper host).
+        </p>
+        <pre><code>actionForms: {
+  transfer: {
+    kind: <span class="str">'form'</span>,
+    title: account => <span class="str">'Record transfer'</span>,
+    saveLabel: <span class="str">'Confirm transfer'</span>,
+    showDocumentUpload: <span class="kw">true</span>,
+    defaultValues: (account, ctx) => ...,
+    buildForm: (account, ctx) => ...,
+    <span class="cm">// sync, Promise or Observable — refreshes definition/values/loading</span>
+    onValuesChange: (account, values, ctx) => ...,
+    save: ctx => <span class="fn">saveAccountTransfer</span>(ctx),
+    success: { mode: <span class="str">'reloadList'</span>, message: <span class="str">'Transfer recorded'</span> },
+  },
+  banking: {
+    kind: <span class="str">'stepper'</span>,
+    steps: [...],
+    customSteps: { upi: { rendererKey: <span class="str">'upiRows'</span> } },
+    defaultValues: account => ...,
+    defaultCustomStepData: account => ({ upi: ... }),
+    buildStepDefinition: (stepId, values, ctx) => ...,
+    resolveSteps: values => ...,
+    save: ctx => <span class="fn">saveAccountBanking</span>(ctx),
+    success: { mode: <span class="str">'updateEntity'</span>, reopenDetail: <span class="kw">true</span> },
+  },
+}
+
+actions: {
+  detailFooter: [
+    { id: <span class="str">'transfer'</span>, label: <span class="str">'Record transfer'</span>, run: <span class="str">'transfer'</span>, actionFormId: <span class="str">'transfer'</span> },
+  ],
+}</code></pre>
+        <p>
+          <code>detail.edit.kind: 'stepper'</code> and <code>bulkEdit.kind: 'stepper'</code>
+          reuse the same host: entering edit opens the stepper sheet instead of the
+          single-form detail body (<code>hasEditStepper</code> /
+          <code>hasBulkEditStepper</code>), and save still runs the configured
+          edit/bulk save with stepper values, documents and custom-step data.
+        </p>
+
+        <h3>Custom step renderers</h3>
+        <p>
+          Stepper steps with <code>kind: 'custom'</code> declare a framework-neutral
+          <code>rendererKey</code>; the Angular host resolves it from a multi-provider
+          registry, so configs stay free of component references.
+        </p>
+        <pre><code><span class="cm">// config (framework-neutral)</span>
+customSteps: { upi: { rendererKey: <span class="str">'upiRows'</span> } }
+
+<span class="cm">// app/feature providers</span>
+<span class="fn">provideListFormCustomStepRenderer</span>(<span class="str">'upiRows'</span>, UpiRowsStepComponent)</code></pre>
+        <p>
+          A renderer component implements <code>ListFormCustomStepComponent</code>:
+          <code>@Input() data</code>, <code>@Output() dataChange</code>, and optional
+          <code>validate(): boolean</code> which gates Next/Save. Collected data reaches
+          <code>save</code> as <code>customStepData[stepId]</code>.
+        </p>
+        <h4>Keeping input focus while typing</h4>
+        <p>
+          The flow stores every <code>dataChange</code> emission and hands it back down.
+          The host never re-applies a renderer's own emission to <code>data</code>, so a
+          renderer keeps owning its editing state between keystrokes.
+        </p>
+        <p>
+          Renderers that list editable rows must still declare a stable
+          <code>trackBy</code>. Replacing an edited row object without one destroys and
+          rebuilds that row, and the control being typed into loses focus. Use the
+          exported <code>trackByIndex</code> for positional row editors:
+        </p>
+        <pre><code>&lt;div *ngFor=<span class="str">"let row of rows; let i = index; trackBy: trackByIndex"</span>&gt;</code></pre>
+      </section>
+
+      <section id="finance-examples">
+        <h2>Finance examples</h2>
+        <table>
+          <thead>
+            <tr><th>Entity</th><th>Create tier</th><th>Notable patterns</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Donation</td>
+              <td><code>stepper</code></td>
+              <td>Route presets, documents async load, bulk edit, donor drill-down sheet, Pay Now footer</td>
+            </tr>
+            <tr>
+              <td>Expense</td>
+              <td><code>stepper</code></td>
+              <td>Custom line-items step, workflow footer actions, separate edit sheet for drafts</td>
+            </tr>
+            <tr>
+              <td>Account</td>
+              <td><code>stepper</code></td>
+              <td>Status primary action (not Edit), transfer/banking domain sheets</td>
+            </tr>
+            <tr>
+              <td>Donor</td>
+              <td><code>form</code> (guest only)</td>
+              <td>Chip-dependent edit forms, merge sheet for bulk</td>
+            </tr>
+            <tr>
+              <td>Earning</td>
+              <td><code>form</code></td>
+              <td>Optional documents in create sheet, payable accounts in edit</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Reference paths (signed-off pilot)</h3>
+        <ul>
+          <li>Pilot module: <code>feature/finance/donation/</code> (<code>config/</code>, <code>data/</code>, <code>domain/</code>, <code>page/</code>)</li>
+          <li>Config factory: <code>feature/finance/donation/config/donation.config.ts</code> → <code>createDonationListConfig</code></li>
+          <li>Page host: <code>feature/finance/donation/page/donation-dashboard.component.*</code></li>
+          <li>Cursor rule: <code>.cursor/rules/reusable-first-migrations.mdc</code></li>
+          <li>App docs: <code>apps/internal-app/docs/README.md</code></li>
+          <li>Core ADR / tokens: <code>packages/frontend/shared/list-dashboard-core/docs/</code></li>
+          <li>React host: <code>packages/frontend/react-list-dashboard/README.md</code></li>
+        </ul>
+      </section>
+
+      <section id="api-reference">
+        <h2>API reference — core types</h2>
+
+        <h3><code>ListRowItem</code></h3>
+        <pre><code>{
+  id: string;
+  title: string;
+  subtitle?: string;
+  subtitleParts?: string[];
+  badge?: { label: string; tone?: string };
+  icon?: string;
+  payload?: unknown;  <span class="cm">// original entity</span>
+}</code></pre>
+
+        <h3><code>ListDetailField</code></h3>
+        <pre><code>{
+  label: string;
+  value: string;
+  format?: <span class="str">'text'</span> | <span class="str">'html'</span>;  <span class="cm">// default: 'text'</span>
+}</code></pre>
+
+        <h3><code>ListDetailSection</code> union</h3>
+        <pre><code><span class="cm">// key_value</span>
+{ type: <span class="str">'key_value'</span>; id; title; fields; collapsed? }
+
+<span class="cm">// documents</span>
+{ type: <span class="str">'documents'</span>; id; title; documents: Doc[]; loading? }
+
+<span class="cm">// content (HTML block)</span>
+{ type: <span class="str">'content'</span>; id; html; title?; collapsed? }</code></pre>
+
+        <h3><code>FilteredListCreateConfig</code></h3>
+        <pre><code>{
+  route: ListCreateRouteSyncConfig;
+  canOpen: (ctx: FilteredListDashboardContext) => boolean;
+  kind?: <span class="str">'form'</span> | <span class="str">'stepper'</span> | <span class="str">'component'</span>;
+
+  <span class="cm">// form tier</span>
+  buildCreateForm?, defaultCreateValues?, validateBeforeCreate?, createSave?,
+
+  <span class="cm">// stepper tier</span>
+  steps?, buildStepDefinition?, resolveSteps?, validateStep?, prepareStep?,
+
+  extraPresetReaders?, onBeforeOpen?, defaultPresets?,
+}</code></pre>
+
+        <h3>Exported from barrel (<code>index.ts</code>)</h3>
+        <p>Controllers, configs, adapters, route sync utilities, create/detail sheet components, bulk-edit helpers, <code>deriveBulkEditHooksFromDetailEdit</code>.</p>
+      </section>
+
+      <section id="related">
+        <h2>Related docs</h2>
+        <ul>
+          <li><code>feature/finance/forms/README.md</code> — form definitions, stepper steps, create save contracts</li>
+          <li><code>packages/frontend/shared/list-dashboard-core/README.md</code></li>
+          <li><code>packages/frontend/angular-list-dashboard/README.md</code></li>
+          <li><code>packages/frontend/react-list-dashboard/README.md</code></li>
+          <li><code>list-detail.helpers.ts</code> — detail field/section factory functions</li>
+          <li><code>list-detail.model.ts</code> — section and field type definitions</li>
+        </ul>
+      </section>
+
+      <footer>
+        Universal List Dashboard Developer Guide ·
+        Generated for internal-app ·
+        Open this file in a browser: <code>packages/frontend/angular-list-dashboard/docs/DEVELOPER-GUIDE.html</code>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    // Highlight active nav link on scroll
+    const sections = document.querySelectorAll('main section[id]');
+    const navLinks = document.querySelectorAll('nav.sidebar a');
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+
+    sections.forEach(section => observer.observe(section));
+  </script>
+</body>
+</html>

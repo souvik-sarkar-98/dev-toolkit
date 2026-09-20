@@ -1,0 +1,43 @@
+{
+  "name": "@ssdev-toolkit/react-list-dashboard",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "styles"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles/list-dashboard.tokens.css": "./styles/list-dashboard.tokens.css",
+    "./styles/list-dashboard.css": "./styles/list-dashboard.css"
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "tsc --noEmit -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "@ssdev-toolkit/react-forms": "*",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "rxjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "@ssdev-toolkit/react-forms": "*",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "rxjs": "^7.8.1",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
+  }
+}

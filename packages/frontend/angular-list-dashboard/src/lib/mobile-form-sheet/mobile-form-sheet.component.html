@@ -1,0 +1,48 @@
+<ng-container *ngIf="open">
+  <div class="mobile-form-sheet__backdrop" (click)="onBackdropClick()" aria-hidden="true"></div>
+
+  <div
+    class="mobile-form-sheet"
+    role="dialog"
+    [attr.aria-label]="ariaLabel ?? title">
+    <div class="mobile-form-sheet__handle" aria-hidden="true"></div>
+
+    <div class="mobile-form-sheet__title-row">
+      <h2 class="mobile-form-sheet__title">{{ title }}</h2>
+      <button type="button" class="mobile-form-sheet__close" (click)="onCloseClick()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <p *ngIf="hint" class="mobile-form-sheet__hint">{{ hint }}</p>
+
+    <div class="mobile-form-sheet__body">
+      <ng-content></ng-content>
+    </div>
+
+    <div class="mobile-form-sheet__actions app-btn-group">
+      <ng-content select="[sheetFooterActions]"></ng-content>
+      <ng-container *ngIf="showDefaultFooter">
+        <button
+          *ngIf="showCancel"
+          type="button"
+          class="app-btn app-btn--ghost"
+          (click)="onCancelClick()"
+          [disabled]="saving">
+          {{ cancelLabel }}
+        </button>
+        <button
+          *ngIf="showSave"
+          type="button"
+          class="app-btn app-btn--primary"
+          (click)="onSaveClick()"
+          [disabled]="saving">
+          {{ saving ? 'Saving…' : saveLabel }}
+        </button>
+      </ng-container>
+    </div>
+  </div>
+</ng-container>

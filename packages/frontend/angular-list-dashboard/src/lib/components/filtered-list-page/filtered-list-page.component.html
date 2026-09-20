@@ -1,0 +1,41 @@
+<app-filtered-infinite-list
+  [chips]="controller.chips"
+  [activeChipId]="controller.activeChip"
+  [items]="controller.listItems"
+  [loading]="controller.listLoading"
+  [loadingMore]="controller.listLoadingMore"
+  [hasMore]="controller.listHasMore"
+  [showToolbar]="showToolbar"
+  [searchText]="controller.listSearchText"
+  [searchPlaceholder]="searchPlaceholder"
+  [filterCount]="controller.activeFilterCount"
+  [appliedFilters]="controller.appliedFilters"
+  [selectable]="selectable"
+  [selectedIds]="controller.selectedIds"
+  [emptyMessage]="emptyMessage"
+  [rowTemplateRef]="rowTemplate"
+  [rowTrailingTemplateRef]="rowTrailing"
+  (chipSelect)="controller.onChipSelect($event)"
+  (searchChange)="controller.onSearchChange($event)"
+  (filterOpen)="controller.onFilterOpen()"
+  (pillRemove)="controller.onPillRemove($event)"
+  (loadMore)="controller.onLoadMore()"
+  (selectedIdsChange)="controller.onSelectionChange($event)"
+  (rowClick)="rowClick.emit($event)"
+  (rowLinkClick)="rowLinkClick.emit($event)">
+  <div bulkActions>
+    <ng-content select="[bulkActions]"></ng-content>
+  </div>
+</app-filtered-infinite-list>
+
+<app-list-filter-sheet
+  [open]="controller.filterSheetOpen"
+  [title]="filterSheetTitle"
+  [definition]="controller.filterFormDefinition!"
+  [initialValues]="controller.filterFormInitialValues"
+  (closed)="controller.onFilterSheetClose()"
+  (applied)="controller.onFilterSheetApply($event)"
+  (reset)="controller.onFilterSheetReset()">
+</app-list-filter-sheet>
+
+<ng-content select="[listOverlays]"></ng-content>
