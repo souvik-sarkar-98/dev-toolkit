@@ -1,4 +1,5 @@
 import * as ExcelJS from 'exceljs';
+import * as fs from 'fs';
 import { Readable } from 'stream';
 import {
     IExcelBuilder,
@@ -8,6 +9,8 @@ import {
     IExcelRowData,
     IExcelCellStyle,
     IExcelColumnDefinition,
+    ExcelCellValue,
+    ExcelImageRange,
 } from '../interfaces/excel-generator.interface';
 
 /**
@@ -65,10 +68,8 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
             });
         }
 
-        // Apply watermark if enabled (default to true if global setting exists)
-        if (this.options.watermark !== undefined || true) { // Always check for default watermark
-            this.applyWatermark();
-        }
+        // Apply watermark if one is configured; no-ops when no asset is available.
+        this.applyWatermark();
     }
 
     private applyWatermark(): void {
@@ -76,7 +77,6 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
             return;
         }
         try {
-            const fs = require('fs') as typeof import('fs');
             if (fs.existsSync(this.watermarkPath)) {
                 const imageBuffer = fs.readFileSync(this.watermarkPath);
                 this.workbook.addImage({
@@ -166,7 +166,7 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
         });
     }
 
-    setCell(row: number, col: number | string, value: any, style?: IExcelCellStyle): IExcelSheetBuilder {
+    setCell(row: number, col: number | string, value: ExcelCellValue, style?: IExcelCellStyle): IExcelSheetBuilder {
         const cell = this.worksheet.getCell(row, typeof col === 'string' ? this.columnLetterToNumber(col) : col);
         cell.value = value;
 
@@ -243,7 +243,7 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
     /**
      * Add an image to the sheet
      */
-    addImage(imageBuffer: Buffer, extension: 'png' | 'jpeg' | 'gif', range: string | any): IExcelSheetBuilder {
+    addImage(imageBuffer: Buffer, extension: 'png' | 'jpeg' | 'gif', range: ExcelImageRange): IExcelSheetBuilder {
         const imageId = this.workbook.addImage({
             buffer: imageBuffer as unknown as ExcelJS.Buffer,
             extension,

@@ -9,7 +9,13 @@ export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["src/**/*.ts", "test/**/*.ts"],
+    // Applies to all package source/test files AND root scripts
+    files: [
+      "packages/**/*.ts",
+      "src/**/*.ts",
+      "test/**/*.ts",
+      "scripts/**/*.mjs",
+    ],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -18,6 +24,7 @@ export default [
       },
       globals: {
         ...globals.node,
+        ...globals.browser,
         ...globals.jest,
       },
     },
@@ -30,9 +37,10 @@ export default [
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/no-require-imports": "off",
       "no-empty": "off",
+      "no-undef": "off",
       "no-unused-private-class-members": "off",
       "no-useless-assignment": "off",
-      "preserve-caught-error": "off",
+      "prefer-const": "off",
     },
   },
 ];

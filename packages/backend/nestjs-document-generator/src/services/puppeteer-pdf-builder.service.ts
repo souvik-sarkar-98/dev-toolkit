@@ -136,7 +136,7 @@ export class PuppeteerPdfBuilderService implements IPdfBuilder {
     private sections: { title?: string; contents: IPdfSectionContent[] }[] = [];
     private customStyles: string[] = [];
 
-    constructor(private readonly templatesDir?: string) {}
+    constructor(private readonly templatesDir?: string) { }
 
     setOptions(options: IPdfDocumentOptions): IPdfBuilder {
         this.options = { ...this.options, ...options };
@@ -266,7 +266,7 @@ export class PuppeteerPdfBuilderService implements IPdfBuilder {
                         element.imgStyle = c.options?.width ? `width: ${c.options.width}px;` : 'max-width: 100%;';
                         element.alignStyle = c.options?.align ? `text-align: ${c.options.align};` : '';
                         break;
-                    case 'table':
+                    case 'table': {
                         const options = c.options as IPdfTableOptions;
                         element.tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; border: ${options?.borderWidth || 1}px solid ${options?.borderColor || '#e5e7eb'}; font-size: ${options?.rowFontSize || 10}pt;`;
                         element.headerStyle = `background-color: ${options?.headerBackground || '#f8fafc'}; color: ${options?.headerTextColor || '#333'}; font-size: ${options?.headerFontSize || 10}pt;`;
@@ -282,6 +282,7 @@ export class PuppeteerPdfBuilderService implements IPdfBuilder {
                             }))
                         }));
                         break;
+                    }
                     case 'list':
                         element.listTag = c.options?.ordered ? 'ol' : 'ul';
                         break;
