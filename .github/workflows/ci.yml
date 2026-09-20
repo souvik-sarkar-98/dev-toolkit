@@ -5,6 +5,8 @@ on:
     branches: 
        - main
        - stage
+    branches-ignore:
+      - 'changeset-release/**'
     types: [opened, synchronize, reopened]
     paths-ignore:
     - '.github/**'
