@@ -16,7 +16,7 @@
     "type-check": "turbo run type-check",
     "lint": "turbo run lint",
     "clean": "turbo run clean && rimraf .turbo",
-    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js && turbo run test --filter=./packages/frontend/* && npm run test:frontend-shared",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js && turbo run test --filter=./packages/*",
     "changeset": "changeset",
     "changeset:status": "changeset status",
     "version-packages": "changeset version",

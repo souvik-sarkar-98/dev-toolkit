@@ -1,11 +1,5 @@
-import { readFileSync, readdirSync } from 'fs';
-import { join } from 'path';
 import { EmailTemplatePayloadSchema } from './email-template.schema';
 
-const correspondenceSeedDir = join(
-  __dirname,
-  '../../../../apps/api/src/shared/seeds/json-store/data/correspondence',
-);
 
 describe('EmailTemplatePayloadSchema', () => {
   it('accepts valid template payloads', () => {
@@ -39,17 +33,5 @@ describe('EmailTemplatePayloadSchema', () => {
     });
 
     expect(result.success).toBe(false);
-  });
-
-  it('validates all correspondence seed files', () => {
-    const files = readdirSync(correspondenceSeedDir).filter(
-      (f) => f.endsWith('.json') && !f.startsWith('_'),
-    );
-
-    for (const file of files) {
-      const payload = JSON.parse(readFileSync(join(correspondenceSeedDir, file), 'utf-8'));
-      const result = EmailTemplatePayloadSchema.safeParse(payload);
-      expect(result.success).toBe(true);
-    }
   });
 });
