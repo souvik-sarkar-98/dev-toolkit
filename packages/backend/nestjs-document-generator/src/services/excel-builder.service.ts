@@ -1,4 +1,5 @@
 import * as ExcelJS from 'exceljs';
+import * as fs from 'fs';
 import { Readable } from 'stream';
 import {
     IExcelBuilder,
@@ -65,10 +66,8 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
             });
         }
 
-        // Apply watermark if enabled (default to true if global setting exists)
-        if (this.options.watermark !== undefined || true) { // Always check for default watermark
-            this.applyWatermark();
-        }
+        // Apply watermark if one is configured; no-ops when no asset is available.
+        this.applyWatermark();
     }
 
     private applyWatermark(): void {
@@ -76,7 +75,6 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
             return;
         }
         try {
-            const fs = require('fs') as typeof import('fs');
             if (fs.existsSync(this.watermarkPath)) {
                 const imageBuffer = fs.readFileSync(this.watermarkPath);
                 this.workbook.addImage({
@@ -271,7 +269,7 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
 
     addReportHeader(options: { title: string; subtitle?: string; mergeColumns?: number; generationDate?: Date }): IExcelSheetBuilder {
         const mergeCols = options.mergeColumns || 3;
-        
+
         // ── Letterhead (rows 1-4) ──────────────────────────────────────────────
         this.mergeCells(1, 1, 1, mergeCols);
         this.setRowHeight(1, 38);
@@ -305,7 +303,7 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
 
         const date = options.generationDate || new Date();
         const formattedDate = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
-        
+
         this.mergeCells(8, 1, 8, mergeCols);
         this.setRowHeight(8, 20);
         this.setCell(8, 1, `Generated on: ${formattedDate}`, {

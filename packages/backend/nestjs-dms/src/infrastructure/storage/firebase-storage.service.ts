@@ -43,7 +43,7 @@ export class FirebaseStorageService {
 
       return `https://firebasestorage.googleapis.com/v0/b/${encodedBucket}/o/${encodedFileName}?alt=media&token=${encodedToken}`;
     } catch (error) {
-      throw new Error(`Firebase upload failed: ${(error as Error).message}`);
+      throw new Error(`Firebase upload failed: ${(error as Error).message}`, { cause: error });
     }
   }
 
@@ -54,7 +54,7 @@ export class FirebaseStorageService {
     try {
       await file.delete();
     } catch (error) {
-      throw new Error(`Firebase delete failed: ${(error as Error).message}`);
+      throw new Error(`Firebase delete failed: ${(error as Error).message}`, { cause: error });
     }
   }
 
@@ -72,7 +72,7 @@ export class FirebaseStorageService {
       });
       return url;
     } catch (error) {
-      throw new Error(`Firebase getSignedUrl failed: ${(error as Error).message}`);
+      throw new Error(`Firebase getSignedUrl failed: ${(error as Error).message}`, { cause: error });
     }
   }
 

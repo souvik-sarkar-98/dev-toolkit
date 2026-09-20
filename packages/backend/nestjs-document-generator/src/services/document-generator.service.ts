@@ -12,7 +12,7 @@ export class DocumentGeneratorService {
     @Optional()
     @Inject(DOCUMENT_GENERATOR_OPTIONS)
     private readonly options: DocumentGeneratorModuleOptions = {},
-  ) {}
+  ) { }
 
   createPdfBuilder(engine: 'pdfkit' | 'puppeteer' = 'pdfkit'): IPdfBuilder {
     if (engine === 'puppeteer') {

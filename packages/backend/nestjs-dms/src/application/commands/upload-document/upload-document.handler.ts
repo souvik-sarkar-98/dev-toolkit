@@ -133,7 +133,7 @@ export class UploadDocumentHandler
 
     // MEDIUM-3: Sanitize fileName before embedding in the storage key to prevent path
     // injection (e.g. ../../../etc/passwd, null bytes, overlong names).
-    const safeName = fileName.replace(/[^a-zA-Z0-9._\-]/g, '_').slice(0, 100);
+    const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 100);
 
     // 5. Upload to storage
     const accessToken = randomUUID();
