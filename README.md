@@ -51,11 +51,9 @@ npm install
 | Script | Description |
 |--------|-------------|
 | `npm run build` | Compile frontend shared cores, then Turbo-build workspace packages (`^build`) |
-| `npm run build:frontend-shared` | `tsc` the four `packages/frontend/shared/*-core` libraries |
 | `npm run type-check` | Type-check all workspaces |
 | `npm run lint` | Type-check / lint workspaces that define `lint` |
 | `npm run test` | Backend Jest from the repo root, then Vitest for frontend adapters and shared cores |
-| `npm run test:frontend-shared` | Vitest for `packages/frontend/shared/*-core` |
 | `npm run clean` | Clean package `dist/` and Turbo cache |
 | `npm run watch:packages` | Rebuild backend and frontend packages on change |
 | `npm run changeset` | Record a semver bump + changelog entry |
