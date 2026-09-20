@@ -9,9 +9,6 @@ concurrency:
   group: ci-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-
 jobs:
   check:
     uses: nabarun-ngo/ngo-nabarun-deploy/.github/workflows/reusable-ci-pr-check.yml@main
