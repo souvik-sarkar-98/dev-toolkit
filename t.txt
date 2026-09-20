@@ -1,0 +1,58 @@
+@ssdev-toolkit/nestjs-document-generator:lint
+cache miss, executing 9160907ef6431815
+
+> @ssdev-toolkit/nestjs-document-generator@1.0.0 lint
+> eslint src/**/*.ts
+
+
+/home/runner/work/dev-toolkit/dev-toolkit/packages/backend/nestjs-document-generator/src/interfaces/excel-generator.interface.ts
+Error:    55:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:    96:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:   100:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:   103:86  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/runner/work/dev-toolkit/dev-toolkit/packages/backend/nestjs-document-generator/src/interfaces/pdf-generator.interface.ts
+Error:   105:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:   106:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:   135:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/runner/work/dev-toolkit/dev-toolkit/packages/backend/nestjs-document-generator/src/services/document-generator.service.ts
+Error:   32:18  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+Error:   33:16  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+/home/runner/work/dev-toolkit/dev-toolkit/packages/backend/nestjs-document-generator/src/services/excel-builder.service.ts
+Error:    69:13  error  Unexpected constant condition             no-constant-condition
+Error:    79:24  error  A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+Error:   169:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+Error:   246:86  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/runner/work/dev-toolkit/dev-toolkit/packages/backend/nestjs-document-generator/src/services/pdf-builder.service.ts
+Error:    69:20  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+Error:   198:17  error  'templateName' is defined but never used        @typescript-eslint/no-unused-vars
+Error:   198:39  error  'data' is defined but never used                @typescript-eslint/no-unused-vars
+Error:   198:45  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+Error:   337:35  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+Error:   341:35  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+Error:   612:55  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+Error:   618:19  error  'pageWidth' is assigned a value but never used  @typescript-eslint/no-unused-vars
+Error:   672:56  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+Error:   757:44  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+Error:   757:70  error  'numColumns' is defined but never used          @typescript-eslint/no-unused-vars
+Error:   775:31  error  'i' is defined but never used                   @typescript-eslint/no-unused-vars
+Error:   778:62  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+/home/runner/work/dev-toolkit/dev-toolkit/packages/backend/nestjs-document-generator/src/services/puppeteer-pdf-builder.service.ts
+Error:    67:20  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+Error:   146:39  error  'data' is defined but never used              @typescript-eslint/no-unused-vars
+Error:   146:45  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+Error:   213:66  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+Error:   230:44  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+Error:   235:31  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+Error:   236:27  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+Error:   239:28  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+Error:   240:29  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+Error:   248:32  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+Error:   270:25  error  Unexpected lexical declaration in case block  no-case-declarations
+Error:   277:51  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+✖ 38 problems (38 errors, 0 warnings)
