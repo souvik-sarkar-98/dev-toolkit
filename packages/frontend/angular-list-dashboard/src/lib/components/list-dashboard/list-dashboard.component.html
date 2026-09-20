@@ -1,0 +1,327 @@
+<section class="list-dashboard" [attr.aria-busy]="controller.loading || controller.preparation.loading">
+  <div *ngIf="controller.loading" class="list-dashboard__state" role="status">
+    Loading {{ config.meta.title || 'list' }}…
+  </div>
+
+  <div *ngIf="controller.error && !controller.loading" class="list-dashboard__state list-dashboard__state--error" role="alert">
+    <p>Unable to load {{ config.meta.title || 'this list' }}.</p>
+    <button type="button" class="app-btn app-btn--primary" (click)="controller.retry()">
+      Retry
+    </button>
+  </div>
+
+  <ng-container *ngIf="controller.initialized">
+    <app-filtered-list-page
+      [controller]="controller.dashboard.listPage"
+      [searchPlaceholder]="controller.dashboard.searchPlaceholder"
+      [filterSheetTitle]="controller.dashboard.filterSheetTitle"
+      [emptyMessage]="controller.dashboard.emptyMessage"
+      [selectable]="controller.dashboard.isListSelectable()"
+      (rowClick)="onRowClick($event)"
+      (rowLinkClick)="onRowLinkClick($event)">
+      <ng-template #rowTemplate let-row>
+        <ng-container
+          *ngIf="customRowTemplate; else defaultRow"
+          [ngTemplateOutlet]="customRowTemplate.template"
+          [ngTemplateOutletContext]="{ $implicit: row, entity: row.payload }">
+        </ng-container>
+        <ng-template #defaultRow>
+          <app-infinite-list-row
+            [item]="row"
+            (rowLinkClick)="onRowLinkClick($event)">
+          </app-infinite-list-row>
+        </ng-template>
+      </ng-template>
+
+      <ng-template #rowTrailing let-row>
+        <button
+          *ngIf="hasRowMenuActions(row)"
+          type="button"
+          class="list-dashboard__row-menu-btn"
+          aria-label="More actions"
+          [matMenuTriggerFor]="rowActionsMenu"
+          [matMenuTriggerData]="{ row: row }"
+          (click)="$event.stopPropagation()">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+      </ng-template>
+
+      <div bulkActions *ngIf="bulkActions || visibleBulkActions.length">
+        <ng-container
+          *ngIf="bulkActions"
+          [ngTemplateOutlet]="bulkActions.template"
+          [ngTemplateOutletContext]="{
+            $implicit: selectedEntities,
+            controller: controller
+          }">
+        </ng-container>
+        <ng-container *ngIf="!bulkActions">
+          <button
+            *ngFor="let action of visibleBulkActions"
+            type="button"
+            class="app-btn"
+            [class.app-btn--primary]="action.appearance !== 'secondary'"
+            (click)="onAction(action)">
+            {{ action.label }}
+          </button>
+        </ng-container>
+      </div>
+
+      <div listOverlays *ngIf="overlay">
+        <ng-container
+          [ngTemplateOutlet]="overlay.template"
+          [ngTemplateOutletContext]="{ $implicit: controller }">
+        </ng-container>
+      </div>
+    </app-filtered-list-page>
+
+    <mat-menu #rowActionsMenu="matMenu" xPosition="before">
+      <ng-template matMenuContent let-row="row">
+        <button
+          *ngFor="let action of rowMenuActionsFor(row)"
+          type="button"
+          mat-menu-item
+          (click)="onRowMenuAction(action, row)">
+          <mat-icon *ngIf="action.icon">{{ action.icon }}</mat-icon>
+          <span>{{ action.label }}</span>
+        </button>
+      </ng-template>
+    </mat-menu>
+
+    <div class="list-dashboard__floating-actions">
+      <ng-container
+        *ngIf="floatingActions"
+        [ngTemplateOutlet]="floatingActions.template"
+        [ngTemplateOutletContext]="{
+          $implicit: selectedEntities,
+          controller: controller
+        }">
+      </ng-container>
+      <ng-container *ngIf="!floatingActions">
+        <button
+          *ngFor="let action of visibleFloatingActions"
+          type="button"
+          class="app-btn"
+          [class.app-btn--primary]="action.appearance !== 'secondary'"
+          [class.list-dashboard__fab]="action.appearance === 'fab'"
+          [attr.aria-label]="action.label"
+          [attr.title]="action.label"
+          (click)="onAction(action)">
+          <mat-icon *ngIf="action.appearance === 'fab'">{{ action.icon || 'add' }}</mat-icon>
+          <span *ngIf="action.appearance !== 'fab'">{{ action.label }}</span>
+        </button>
+        <button
+          *ngIf="!visibleFloatingActions.length && controller.dashboard.showCreateFab"
+          type="button"
+          class="app-btn app-btn--primary"
+          (click)="controller.openCreate()">
+          Create
+        </button>
+      </ng-container>
+    </div>
+
+    <app-list-detail-sheet
+      [open]="detailSheetOpen"
+      [mode]="controller.dashboard.detailPage.mode"
+      [title]="controller.dashboard.detailPage.title"
+      [sections]="controller.dashboard.detailPage.sections"
+      [loading]="controller.dashboard.detailPage.loading"
+      [saving]="controller.dashboard.detailPage.saving"
+      [primaryActionLabel]="controller.dashboard.detailPage.primaryActionLabel"
+      [editSummary]="controller.dashboard.detailPage.editSummary"
+      [editDefinition]="controller.dashboard.detailPage.editDefinition"
+      [editInitialValues]="controller.dashboard.detailPage.editInitialValues"
+      [editEngineOptions]="formEngineOptions"
+      [editShowDocumentUpload]="controller.dashboard.detailPage.editShowDocumentUpload"
+      [editDocumentUploadHint]="documentUploadHint"
+      [editDocumentUploadError]="controller.dashboard.detailPage.editDocumentError"
+      [editDocumentAllowedTypes]="controller.dashboard.detailPage.editDocumentAllowedTypes"
+      [hasFooterActions]="!!detailFooterActions || !!visibleDetailFooterActions.length"
+      (closed)="controller.dashboard.detailPage.close()"
+      (primaryAction)="controller.enterDetailEdit()"
+      (editCancel)="controller.dashboard.detailPage.cancelEdit()"
+      (editSave)="controller.dashboard.detailPage.onEditSave($event)"
+      (editValuesChange)="controller.dashboard.detailPage.onEditValuesChange($event)"
+      (editDocumentsChange)="controller.dashboard.detailPage.onEditDocumentsChange($event)">
+      <div detailHero *ngIf="detailHero">
+        <ng-container
+          [ngTemplateOutlet]="detailHero.template"
+          [ngTemplateOutletContext]="{
+            $implicit: controller.dashboard.detailPage.selected,
+            controller: controller
+          }">
+        </ng-container>
+      </div>
+
+      <div detailViewExtras *ngIf="detailViewExtras">
+        <ng-container
+          [ngTemplateOutlet]="detailViewExtras.template"
+          [ngTemplateOutletContext]="{
+            $implicit: controller.dashboard.detailPage.selected,
+            controller: controller
+          }">
+        </ng-container>
+      </div>
+
+      <div
+        detailHeaderActions
+        class="list-dashboard__detail-header-actions"
+        *ngIf="controller.dashboard.detailPage.mode === 'view' && visibleDetailMenuActions.length">
+        <button
+          type="button"
+          class="list-dashboard__detail-menu-btn"
+          aria-label="More actions"
+          [matMenuTriggerFor]="detailActionsMenu">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+      </div>
+
+      <div
+        detailFooterActions
+        class="list-dashboard__detail-footer-actions"
+        *ngIf="detailFooterActions || visibleDetailFooterActions.length">
+        <ng-container
+          *ngIf="detailFooterActions"
+          [ngTemplateOutlet]="detailFooterActions.template"
+          [ngTemplateOutletContext]="{
+            $implicit: controller.dashboard.detailPage.selected,
+            controller: controller
+          }">
+        </ng-container>
+        <ng-container *ngIf="!detailFooterActions">
+          <button
+            *ngFor="let action of visibleDetailFooterActions"
+            type="button"
+            class="app-btn"
+            [class.app-btn--primary]="action.appearance !== 'secondary'"
+            [class.app-btn--secondary]="action.appearance === 'secondary'"
+            (click)="onDetailAction(action)">
+            {{ action.label }}
+          </button>
+        </ng-container>
+      </div>
+    </app-list-detail-sheet>
+
+    <mat-menu #detailActionsMenu="matMenu" xPosition="before">
+      <button
+        *ngFor="let action of visibleDetailMenuActions"
+        type="button"
+        mat-menu-item
+        (click)="onDetailAction(action)">
+        <mat-icon *ngIf="action.icon">{{ action.icon }}</mat-icon>
+        <span>{{ action.label }}</span>
+      </button>
+    </mat-menu>
+
+    <app-list-create-sheet
+      *ngIf="controller.dashboard.hasCreateForm"
+      [open]="controller.dashboard.createPage.open"
+      [title]="config.meta.title ? 'Create ' + config.meta.title : 'Create'"
+      [definition]="controller.dashboard.createDefinition"
+      [initialValues]="controller.dashboard.createInitialValues"
+      [engineOptions]="formEngineOptions"
+      [saveLabel]="config.create?.saveLabel ?? 'Create'"
+      [saving]="controller.createSaving"
+      (dismissed)="controller.dashboard.createPage.close()"
+      (valuesChange)="onCreateValuesChange($event)"
+      (saved)="onCreateSave($event)">
+    </app-list-create-sheet>
+
+    <app-list-create-stepper-sheet
+      *ngIf="controller.dashboard.hasCreateStepper"
+      [open]="controller.dashboard.createPage.open"
+      [title]="config.meta.title ? 'Create ' + config.meta.title : 'Create'"
+      [steps]="controller.dashboard.createSteps"
+      [buildStepDefinition]="controller.dashboard.buildCreateStepDefinition"
+      [resolveSteps]="controller.dashboard.resolveCreateSteps"
+      [validateStep]="controller.dashboard.validateCreateStep"
+      [prepareStep]="controller.dashboard.prepareCreateStep"
+      [initialValues]="controller.dashboard.createInitialValues"
+      [engineOptions]="formEngineOptions"
+      [saving]="controller.createSaving"
+      [customSteps]="config.create?.customSteps"
+      [customStepData]="controller.createCustomStepData"
+      (customStepDataChange)="controller.onCreateCustomStepDataChange($event)"
+      (dismissed)="controller.dashboard.createPage.close()"
+      (validationError)="onValidationError($event)"
+      (completed)="onCreateSave($event)">
+    </app-list-create-stepper-sheet>
+
+    <app-list-detail-sheet
+      [open]="controller.dashboard.bulkEditPage.open"
+      mode="edit"
+      [title]="controller.dashboard.bulkEditPage.title"
+      [saving]="controller.dashboard.bulkEditPage.saving"
+      [editSummary]="controller.dashboard.bulkEditPage.editSummary"
+      [editDefinition]="controller.dashboard.bulkEditPage.editDefinition"
+      [editInitialValues]="controller.dashboard.bulkEditPage.editInitialValues"
+      [editEngineOptions]="formEngineOptions"
+      [editShowDocumentUpload]="controller.dashboard.bulkEditPage.editShowDocumentUpload"
+      [editDocumentUploadHint]="documentUploadHint"
+      [editDocumentUploadError]="controller.dashboard.bulkEditPage.editDocumentError"
+      [editDocumentAllowedTypes]="controller.dashboard.bulkEditPage.editDocumentAllowedTypes"
+      (editCancel)="controller.dashboard.bulkEditPage.close()"
+      (editSave)="controller.dashboard.bulkEditPage.onEditSave($event)"
+      (editValuesChange)="controller.dashboard.bulkEditPage.onEditValuesChange($event)"
+      (editDocumentsChange)="controller.dashboard.bulkEditPage.onEditDocumentsChange($event)">
+    </app-list-detail-sheet>
+
+    <!--
+      Action forms (config `actionForms`) plus the detail-edit and bulk-edit
+      stepper flows all render through the shared action-form controller.
+    -->
+    <app-list-create-sheet
+      *ngIf="controller.actionForm.open && controller.actionForm.kind === 'form'"
+      [open]="controller.actionForm.open"
+      [title]="controller.actionForm.title"
+      [definition]="controller.actionForm.definition"
+      [initialValues]="controller.actionForm.initialValues"
+      [engineOptions]="formEngineOptions"
+      [saving]="controller.actionForm.saving || controller.actionForm.loading"
+      [saveLabel]="controller.actionForm.saveLabel"
+      idPrefix="list-action-form"
+      (valuesChange)="controller.actionForm.onValuesChange($event)"
+      (dismissed)="controller.actionForm.close()"
+      (saved)="controller.actionForm.submit($event)">
+      <section *ngIf="controller.actionForm.showDocumentUpload" class="list-dashboard__upload">
+        <p class="list-dashboard__upload-hint">
+          {{ controller.actionForm.documentUploadHint || documentUploadHint }}
+        </p>
+        <uld-dynamic-file-upload
+          [component]="fileUploadComponent"
+          [allowedFileTypes]="controller.actionForm.documentAllowedTypes"
+          [maxFileSize]="fileUploadMaxSize"
+          (files)="controller.actionForm.onDocumentsChange($event)">
+        </uld-dynamic-file-upload>
+        <div
+          *ngIf="controller.actionForm.documentError"
+          class="cf-field-error mat-mdc-form-field-error"
+          role="alert">
+          {{ controller.actionForm.documentError }}
+        </div>
+      </section>
+    </app-list-create-sheet>
+
+    <app-list-create-stepper-sheet
+      *ngIf="controller.actionForm.open && controller.actionForm.kind === 'stepper'"
+      [open]="controller.actionForm.open"
+      [title]="controller.actionForm.title"
+      [steps]="controller.actionForm.steps"
+      [buildStepDefinition]="controller.actionForm.buildStepDefinition"
+      [resolveSteps]="controller.actionForm.resolveSteps"
+      [validateStep]="controller.actionForm.validateStep"
+      [prepareStep]="controller.actionForm.prepareStep"
+      [initialValues]="controller.actionForm.initialValues"
+      [customSteps]="controller.actionForm.customSteps"
+      [customStepData]="controller.actionForm.customStepData"
+      [engineOptions]="formEngineOptions"
+      [saving]="controller.actionForm.saving"
+      [completeLabel]="controller.actionForm.saveLabel"
+      idPrefix="list-action-form-stepper"
+      (customStepDataChange)="controller.actionForm.onCustomStepDataChange($event)"
+      (validationError)="onValidationError($event)"
+      (dismissed)="controller.actionForm.close()"
+      (completed)="controller.actionForm.submit($event)">
+    </app-list-create-stepper-sheet>
+  </ng-container>
+</section>

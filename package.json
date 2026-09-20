@@ -7,24 +7,25 @@
     "node": ">=22"
   },
   "workspaces": [
-    "packages/*"
+    "packages/backend/*",
+    "packages/frontend/*",
+    "packages/frontend/shared/*"
   ],
   "scripts": {
     "build": "turbo run build",
     "type-check": "turbo run type-check",
+    "lint": "turbo run lint",
     "clean": "turbo run clean && rimraf .turbo",
-    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js && turbo run test --filter=./packages/frontend/* && npm run test:frontend-shared",
     "changeset": "changeset",
     "changeset:status": "changeset status",
-    "version-packages": "changeset version && npm install",
-    "release:build": "turbo run build --filter=./packages/*",
+    "version-packages": "changeset version",
+    "release:build": "turbo run build",
     "release:publish": "changeset publish",
     "release:ci": "npm run type-check && npm run release:build && npm run release:publish",
     "release": "npm run release:ci",
     "release:beta": "npm run type-check && npm run release:build && changeset publish --tag beta",
-    "watch:packages": "turbo watch build --filter=./packages/*",
-    "start:debug": "npm run start:debug --workspace=apps/api && start npm run watch:packages ",
-    "start:dev": "start npm run watch:packages && npm run dev --workspace=apps/api"
+    "watch:packages": "turbo watch build"
   },
   "dependencies": {
     "@googleapis/calendar": "^15.0.0",
@@ -74,7 +75,7 @@
     "pg": "^8.13.0",
     "puppeteer": "^24.36.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.0",
+    "rxjs": "7.8.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -107,6 +108,20 @@
     "tsconfig-paths": "^4.2.0",
     "turbo": "latest",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.62.1"
+    "typescript-eslint": "^8.62.1",
+    "vitest": "^3.2.4"
+  },
+  "overrides": {
+    "rxjs": "7.8.2",
+    "@angular/animations": "21.2.19",
+    "@angular/cdk": "21.2.14",
+    "@angular/common": "21.2.19",
+    "@angular/compiler": "21.2.19",
+    "@angular/compiler-cli": "21.2.19",
+    "@angular/core": "21.2.19",
+    "@angular/forms": "21.2.19",
+    "@angular/material": "21.2.14",
+    "@angular/platform-browser": "21.2.19",
+    "@angular/router": "21.2.19"
   }
 }

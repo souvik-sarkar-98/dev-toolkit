@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "noEmit": true,
+    "rootDir": "${configDir}/src",
+    "outDir": "${configDir}/dist",
+    "types": [
+      "node",
+      "jest"
+    ]
+  },
+  "include": [
+    "${configDir}/src/**/*.ts"
+  ]
+}

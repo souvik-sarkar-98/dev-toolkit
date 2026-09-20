@@ -1,0 +1,52 @@
+:root {
+  --primary-50: #fff7ed;
+  --primary-100: #ffedd5;
+  --primary-200: #fed7aa;
+  --primary-300: #fdba74;
+  --primary-500: #f97316;
+  --primary-600: #ea580c;
+  --primary-700: #c2410c;
+  --primary-800: #9a3412;
+
+  --secondary-400: #94a3b8;
+  --secondary-500: #64748b;
+  --secondary-600: #475569;
+  --secondary-700: #334155;
+  --secondary-800: #1e293b;
+  --secondary-900: #0f172a;
+
+  --uld-badge-success-bg: #dcfce7;
+  --uld-badge-success-fg: #15803d;
+  --uld-badge-warning-bg: #fef3c7;
+  --uld-badge-warning-fg: #b45309;
+  --uld-badge-danger-bg: #fee2e2;
+  --uld-badge-danger-fg: #b91c1c;
+  --uld-badge-neutral-bg: #f1f5f9;
+  --uld-badge-neutral-fg: #475569;
+
+  --uld-icon-orange: #ffedd5;
+  --uld-icon-orange-fg: #c2410c;
+  --uld-icon-blue: #dbeafe;
+  --uld-icon-blue-fg: #1d4ed8;
+  --uld-icon-green: #dcfce7;
+  --uld-icon-green-fg: #15803d;
+  --uld-icon-red: #fee2e2;
+  --uld-icon-red-fg: #b91c1c;
+  --uld-icon-amber: #fef3c7;
+  --uld-icon-amber-fg: #b45309;
+  --uld-icon-indigo: #e0e7ff;
+  --uld-icon-indigo-fg: #4338ca;
+  --uld-icon-neutral: #f1f5f9;
+  --uld-icon-neutral-fg: #334155;
+
+  --uld-row-hover: #fffaf5;
+  --uld-item-list-border: rgba(148, 163, 184, 0.18);
+
+  --uld-fab-size: 48px;
+  --uld-fab-icon-size: 22px;
+  --uld-fab-right: 32px;
+  --uld-fab-right-mobile: 16px;
+  --uld-fab-bottom: 32px;
+  --uld-fab-bottom-mobile: calc(56px + env(safe-area-inset-bottom, 0px) + 16px);
+  --uld-fab-z-index: 220;
+}

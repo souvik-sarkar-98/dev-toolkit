@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.angular.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@ssdev-toolkit/comment-core": [
+        "../shared/comment-core/src/index.ts"
+      ]
+    }
+  }
+}

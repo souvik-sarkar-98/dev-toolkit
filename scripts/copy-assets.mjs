@@ -27,7 +27,7 @@
  *
  * 3. CLI single mapping:
  *
- *      node ../../scripts/copy-assets.mjs <srcDir> <destDir> [--ext=.hbs,.png] [--match=<regex>]
+ *      node ../../../scripts/copy-assets.mjs <srcDir> <destDir> [--ext=.hbs,.png] [--match=<regex>]
  *
  * Paths are resolved relative to the invoking package (process.cwd(), which npm
  * sets to the package directory for lifecycle scripts). Directories are always

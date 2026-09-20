@@ -8,7 +8,7 @@ module.exports = {
     '<rootDir>/apps/**/src/**/*.spec.ts',
     '<rootDir>/packages/**/src/**/*.spec.ts',
   ],
-  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '<rootDir>/packages/frontend/'],
   transform: {
     '^.+\\.ts$': [
       'ts-jest',

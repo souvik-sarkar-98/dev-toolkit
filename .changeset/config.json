@@ -3,7 +3,21 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [
-    
+    [
+      "@ssdev-toolkit/react-forms",
+      "@ssdev-toolkit/angular-forms"
+    ],
+    [
+      "@ssdev-toolkit/react-comment",
+      "@ssdev-toolkit/angular-comment"
+    ],
+    [
+      "@ssdev-toolkit/angular-list-dashboard",
+      "@ssdev-toolkit/react-list-dashboard"
+    ],
+    [
+      "@ssdev-toolkit/angular-auth"
+    ]
   ],
   "linked": [],
   "access": "public",

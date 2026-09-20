@@ -1,0 +1,152 @@
+<div class="filtered-infinite-list">
+  <app-chip-filter-bar
+    [chips]="chips"
+    [activeId]="activeChipId"
+    (chipSelect)="chipSelect.emit($event)">
+  </app-chip-filter-bar>
+
+  <app-list-filter-toolbar
+    *ngIf="showToolbar"
+    [searchText]="searchText"
+    [searchPlaceholder]="searchPlaceholder"
+    [filterCount]="filterCount"
+    (searchChange)="searchChange.emit($event)"
+    (filterOpen)="filterOpen.emit()">
+  </app-list-filter-toolbar>
+
+  <app-applied-filter-pills
+    *ngIf="showToolbar && appliedFilters.length"
+    [filters]="appliedFilters"
+    (remove)="pillRemove.emit($event)">
+  </app-applied-filter-pills>
+
+  <div
+    *ngIf="selectable && useTapInteraction && !selectionModeActive && !initialLoading && items.length"
+    class="filtered-infinite-list__select-entry">
+    <button type="button" class="filtered-infinite-list__select-entry-btn" (click)="enterSelectionMode()">
+      Select items
+    </button>
+    <span class="filtered-infinite-list__select-entry-hint">or long-press a row</span>
+  </div>
+
+  <div
+    *ngIf="selectable && selectedCount > 0"
+    class="filtered-infinite-list__bulk-bar">
+    <div class="filtered-infinite-list__bulk-meta">
+      <span class="filtered-infinite-list__bulk-count">{{ selectedCount }} selected</span>
+      <button type="button" class="filtered-infinite-list__bulk-clear" (click)="clearSelection()">
+        Clear selection
+      </button>
+    </div>
+    <div class="filtered-infinite-list__bulk-actions">
+      <ng-content select="[bulkActions]"></ng-content>
+    </div>
+  </div>
+
+  <div
+    class="filtered-infinite-list__panel"
+    [class.filtered-infinite-list__panel--refreshing]="refreshing">
+    <div
+      *ngIf="selectable && useTapInteraction && selectionModeActive && items.length"
+      class="filtered-infinite-list__select-header filtered-infinite-list__select-header--tap">
+      <button
+        type="button"
+        class="filtered-infinite-list__select-action"
+        (click)="toggleAll(!allSelected)">
+        {{ allSelected ? 'Deselect all' : 'Select all' }}
+      </button>
+      <span class="filtered-infinite-list__select-label">Tap rows to select</span>
+      <button type="button" class="filtered-infinite-list__select-action" (click)="exitSelectionMode()">
+        Cancel
+      </button>
+    </div>
+
+    <div
+      *ngIf="selectable && !useTapInteraction && items.length"
+      class="filtered-infinite-list__select-header">
+      <mat-checkbox
+        color="primary"
+        [checked]="allSelected"
+        [indeterminate]="isIndeterminate"
+        (change)="toggleAll($event.checked)">
+      </mat-checkbox>
+      <span class="filtered-infinite-list__select-label">Select all</span>
+    </div>
+
+    <div
+      *ngIf="refreshing"
+      class="filtered-infinite-list__refresh-bar"
+      role="status"
+      aria-live="polite">
+      <span class="filtered-infinite-list__spinner filtered-infinite-list__spinner--sm" aria-hidden="true"></span>
+      <span>Updating…</span>
+    </div>
+
+    <div *ngIf="initialLoading" class="filtered-infinite-list__state filtered-infinite-list__state--initial">
+      <span class="filtered-infinite-list__spinner" aria-hidden="true"></span>
+      <span>Loading…</span>
+    </div>
+
+    <div
+      *ngFor="let item of items"
+      class="filtered-infinite-list__row"
+      [class.filtered-infinite-list__row--selected]="isSelected(item.id)">
+      <div
+        *ngIf="selectable && !useTapInteraction"
+        class="filtered-infinite-list__row-check"
+        (click)="$event.stopPropagation()">
+        <mat-checkbox
+          color="primary"
+          [checked]="isSelected(item.id)"
+          (change)="toggleSelection(item, $event.checked)">
+        </mat-checkbox>
+      </div>
+      <button
+        type="button"
+        class="filtered-infinite-list__row-btn"
+        [class.filtered-infinite-list__row-btn--selectable]="selectable && useTapInteraction && selectionModeActive"
+        [attr.aria-pressed]="selectable && useTapInteraction && selectionModeActive ? isSelected(item.id) : null"
+        (click)="onRowClick(item)"
+        (pointerdown)="onRowPointerDown(item)"
+        (pointerup)="onRowPointerUp()"
+        (pointerleave)="onRowPointerUp()"
+        (pointercancel)="onRowPointerUp()">
+        <ng-container
+          *ngIf="resolvedRowTemplate; else defaultRow"
+          [ngTemplateOutlet]="resolvedRowTemplate"
+          [ngTemplateOutletContext]="{ $implicit: item }">
+        </ng-container>
+        <ng-template #defaultRow>
+          <app-infinite-list-row
+            [item]="item"
+            (rowLinkClick)="rowLinkClick.emit($event)">
+          </app-infinite-list-row>
+        </ng-template>
+      </button>
+      <div
+        *ngIf="resolvedRowTrailingTemplate"
+        class="filtered-infinite-list__row-trailing"
+        (click)="$event.stopPropagation()">
+        <ng-container
+          [ngTemplateOutlet]="resolvedRowTrailingTemplate"
+          [ngTemplateOutletContext]="{ $implicit: item }">
+        </ng-container>
+      </div>
+    </div>
+
+    <p *ngIf="!items.length && !loading" class="filtered-infinite-list__empty">{{ emptyMessage }}</p>
+
+    <div *ngIf="loadingMore" class="filtered-infinite-list__state filtered-infinite-list__state--inline">
+      <span class="filtered-infinite-list__spinner" aria-hidden="true"></span>
+      <span>Loading more…</span>
+    </div>
+
+    <div
+      *ngIf="hasMore && !loadingMore && items.length"
+      appInfiniteScrollSentinel
+      (visible)="loadMore.emit()"
+      class="filtered-infinite-list__sentinel"
+      aria-hidden="true">
+    </div>
+  </div>
+</div>

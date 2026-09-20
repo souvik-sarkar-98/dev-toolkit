@@ -1,0 +1,98 @@
+<section
+  *ngFor="let section of sections; trackBy: trackSection"
+  class="list-detail-sections__section">
+  <button
+    *ngIf="section.type === 'key_value' || section.type === 'item_list' || (section.type === 'content' && section.title)"
+    type="button"
+    class="list-detail-sections__section-header"
+    (click)="toggleSection(section)">
+    <span class="list-detail-sections__section-title">{{ section.title }}</span>
+    <svg
+      class="list-detail-sections__chevron"
+      [class.list-detail-sections__chevron--collapsed]="section.collapsed"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>
+
+  <div
+    *ngIf="section.type === 'documents'"
+    class="list-detail-sections__section-header list-detail-sections__section-header--static">
+    <span class="list-detail-sections__section-title">{{ section.title }}</span>
+  </div>
+
+  <div
+    *ngIf="section.type === 'key_value' && !section.collapsed"
+    class="list-detail-sections__kv-grid">
+    <div
+      *ngFor="let field of section.fields; trackBy: trackField"
+      class="list-detail-sections__kv-row">
+      <div class="list-detail-sections__kv-label">{{ field.label }}</div>
+      <div
+        *ngIf="field.format !== 'html'"
+        class="list-detail-sections__kv-value">
+        {{ field.value }}
+      </div>
+      <div
+        *ngIf="field.format === 'html'"
+        class="list-detail-sections__kv-value list-detail-sections__rich-html"
+        [innerHTML]="field.value">
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="section.type === 'content' && !section.collapsed"
+    class="list-detail-sections__content list-detail-sections__rich-html"
+    [innerHTML]="section.html">
+  </div>
+
+  <div *ngIf="section.type === 'item_list' && !section.collapsed" class="list-detail-sections__item-list">
+    <div *ngIf="section.loading" class="list-detail-sections__state list-detail-sections__state--inline">
+      <span class="list-detail-sections__spinner" aria-hidden="true"></span>
+      <span>Loading…</span>
+    </div>
+    <p
+      *ngIf="!section.loading && !section.items.length"
+      class="list-detail-sections__empty">
+      {{ section.emptyMessage || 'No items.' }}
+    </p>
+    <article
+      *ngFor="let item of section.items; trackBy: trackItemListItem"
+      class="list-detail-sections__item">
+      <div class="list-detail-sections__item-main">
+        <div class="list-detail-sections__item-title">{{ item.title }}</div>
+        <div *ngIf="item.subtitle" class="list-detail-sections__item-subtitle">{{ item.subtitle }}</div>
+        <div *ngIf="item.metaLeft || item.metaRight" class="list-detail-sections__item-meta">
+          <span *ngIf="item.metaLeft">{{ item.metaLeft }}</span>
+          <span *ngIf="item.metaRight">{{ item.metaRight }}</span>
+        </div>
+      </div>
+      <span
+        *ngIf="item.badge"
+        class="list-detail-sections__item-badge"
+        [attr.data-tone]="item.badge.tone || 'neutral'">
+        {{ item.badge.label }}
+      </span>
+    </article>
+  </div>
+
+  <div *ngIf="section.type === 'documents'" class="list-detail-sections__documents">
+    <div *ngIf="section.loading" class="list-detail-sections__state list-detail-sections__state--inline">
+      <span class="list-detail-sections__spinner" aria-hidden="true"></span>
+      <span>Loading documents...</span>
+    </div>
+    <ng-container *ngIf="!section.loading">
+      <ng-container
+        *ngComponentOutlet="
+          documentListComponent;
+          inputs: { documents: section.documents, showHeading: false }
+        ">
+      </ng-container>
+    </ng-container>
+  </div>
+</section>

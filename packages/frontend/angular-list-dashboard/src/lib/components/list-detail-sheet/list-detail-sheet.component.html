@@ -1,0 +1,128 @@
+<ng-container *ngIf="open">
+  <div
+    class="list-detail-sheet__backdrop"
+    (click)="onBackdropClick()"
+    aria-hidden="true">
+  </div>
+
+  <div class="list-detail-sheet" role="dialog" [attr.aria-label]="sheetTitle">
+    <div class="list-detail-sheet__handle" aria-hidden="true"></div>
+
+    <div class="list-detail-sheet__title-row">
+      <h2 class="list-detail-sheet__title">{{ sheetTitle }}</h2>
+      <div class="list-detail-sheet__title-actions">
+        <ng-content select="[detailHeaderActions]"></ng-content>
+        <button
+          *ngIf="allowDismiss || (mode === 'edit' && allowEditCancel)"
+          type="button"
+          class="list-detail-sheet__close"
+          (click)="onDismissClick()"
+          [attr.aria-label]="mode === 'edit' ? 'Cancel edit' : 'Close'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="list-detail-sheet__hero-slot" *ngIf="mode === 'view'">
+      <ng-content select="[detailHero]"></ng-content>
+    </div>
+
+    <div class="list-detail-sheet__body">
+      <div *ngIf="loading && !sections.length" class="list-detail-sheet__state">
+        <span class="list-detail-sheet__spinner" aria-hidden="true"></span>
+        <span>Loading details…</span>
+      </div>
+
+      <app-list-detail-sections
+        *ngIf="sections.length && mode === 'view'"
+        [sections]="sections">
+      </app-list-detail-sections>
+
+      <div class="list-detail-sheet__view-extras" *ngIf="mode === 'view'">
+        <ng-content select="[detailViewExtras]"></ng-content>
+      </div>
+
+      <ng-container *ngIf="mode === 'edit'">
+        <div *ngIf="editSummary.length" class="list-detail-sheet__summary">
+          <div
+            *ngFor="let field of editSummary; trackBy: trackSummaryField"
+            class="list-detail-sheet__summary-row">
+            <span class="list-detail-sheet__summary-label">{{ field.label }}</span>
+            <span
+              *ngIf="field.format !== 'html'"
+              class="list-detail-sheet__summary-value">
+              {{ field.value }}
+            </span>
+            <span
+              *ngIf="field.format === 'html'"
+              class="list-detail-sheet__summary-value list-detail-sheet__rich-html"
+              [innerHTML]="field.value">
+            </span>
+          </div>
+        </div>
+
+        <cf-form
+          *ngIf="editDefinition && !hideEditForm"
+          class="list-detail-sheet__form"
+          [definition]="editDefinition"
+          [initialValues]="editInitialValues"
+          [engineOptions]="editEngineOptions"
+          [hideHeading]="true"
+          [showSubmit]="false"
+          idPrefix="detail-edit"
+          (valuesChange)="onEditValuesChange($event)">
+        </cf-form>
+
+        <ng-content select="[detailEditExtras]"></ng-content>
+
+        <section *ngIf="editShowDocumentUpload" class="list-detail-sheet__upload">
+          <label class="cf-field-label list-detail-sheet__upload-label">
+            {{ editDocumentUploadLabel }}
+            <span class="cf-required-mark" aria-hidden="true"> *</span>
+          </label>
+          <p class="list-detail-sheet__upload-hint">{{ editDocumentUploadHint }}</p>
+          <uld-dynamic-file-upload
+            [component]="fileUploadComponent"
+            [allowedFileTypes]="editDocumentAllowedTypes"
+            [maxFileSize]="fileUploadMaxSize"
+            (files)="onFileUpload($event)">
+          </uld-dynamic-file-upload>
+          <div *ngIf="editDocumentUploadError" class="cf-field-error mat-mdc-form-field-error" role="alert">
+            {{ editDocumentUploadError }}
+          </div>
+        </section>
+      </ng-container>
+    </div>
+
+    <div
+      class="list-detail-sheet__actions list-detail-sheet__actions--stacked"
+      *ngIf="mode === 'view' && (primaryActionLabel || hasFooterActions)">
+      <ng-content select="[detailFooterActions]"></ng-content>
+      <button
+        *ngIf="primaryActionLabel"
+        type="button"
+        class="app-btn app-btn--primary app-btn--block"
+        (click)="onPrimaryAction()">
+        {{ primaryActionLabel }}
+      </button>
+    </div>
+
+    <div class="list-detail-sheet__actions app-btn-group" *ngIf="mode === 'edit' && !hideEditActions">
+      <button
+        *ngIf="allowEditCancel"
+        type="button"
+        class="app-btn app-btn--ghost"
+        (click)="onCancelEdit()"
+        [disabled]="saving">
+        Cancel
+      </button>
+      <button type="button" class="app-btn app-btn--primary" (click)="onSaveEdit()" [disabled]="saving">
+        {{ saving ? 'Saving...' : 'Save' }}
+      </button>
+    </div>
+  </div>
+</ng-container>

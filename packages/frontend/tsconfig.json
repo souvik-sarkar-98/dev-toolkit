@@ -1,0 +1,28 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true,
+    "outDir": "${configDir}/dist",
+    "baseUrl": ".",
+    "paths": {
+      "@ssdev-toolkit/forms-core": [
+        "./shared/forms-core/src/index.ts"
+      ],
+      "@ssdev-toolkit/comment-core": [
+        "./shared/comment-core/src/index.ts"
+      ],
+      "@ssdev-toolkit/list-dashboard-core": [
+        "./shared/list-dashboard-core/src/index.ts"
+      ],
+      "@ssdev-toolkit/auth-core": [
+        "./shared/auth-core/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "${configDir}/src/**/*"
+  ]
+}

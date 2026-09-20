@@ -1,0 +1,64 @@
+<app-list-row-card
+  [iconTone]="item.iconTone ?? 'orange'"
+  [avatar]="!!item.avatarUrl || !!item.avatarInitials"
+  [badgeTone]="item.badge?.tone ?? 'neutral'">
+  <img
+    *ngIf="item.avatarUrl"
+    listRowIcon
+    class="list-row__avatar"
+    [src]="item.avatarUrl"
+    [alt]="item.title"
+  />
+  <span
+    *ngIf="!item.avatarUrl && item.avatarInitials"
+    listRowIcon
+    class="list-row__avatar list-row__avatar--initials"
+    aria-hidden="true">{{ item.avatarInitials }}</span>
+  <svg
+    *ngIf="!item.avatarUrl && !item.avatarInitials"
+    listRowIcon
+    class="list-row__icon-svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true">
+    <ng-container [ngSwitch]="item.icon">
+      <path *ngSwitchCase="'account'" d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"></path>
+      <path *ngSwitchCase="'expense'" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2z"></path>
+      <path *ngSwitchCase="'task'" d="M9 11l3 3L22 4"></path>
+      <path *ngSwitchCase="'person'" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+      <path *ngSwitchDefault d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+    </ng-container>
+  </svg>
+
+  <span listRowTitle>{{ item.title }}</span>
+
+  <span listRowSubtitle *ngIf="item.subtitleParts?.length; else plainSubtitle">
+    <ng-container *ngFor="let part of item.subtitleParts; let last = last">
+      <span
+        *ngIf="part.linkId; else textPart"
+        class="list-row__subtitle-link"
+        role="link"
+        tabindex="0"
+        (click)="onLinkClick($event, part.linkId)"
+        (keydown.enter)="onLinkClick($event, part.linkId)"
+        (keydown.space)="onLinkClick($event, part.linkId)">{{ part.text }}</span>
+      <ng-template #textPart>
+        <span [class.list-row__subtitle-emphasis]="part.emphasis">{{ part.text }}</span>
+      </ng-template>
+      <span *ngIf="!last" class="list-row__subtitle-sep">{{ item.subtitleSeparator ?? ' · ' }}</span>
+    </ng-container>
+  </span>
+  <ng-template #plainSubtitle>
+    <span *ngIf="item.subtitle" listRowSubtitle>{{ item.subtitle }}</span>
+  </ng-template>
+
+  <span *ngIf="item.metaLeft" listRowMetaLeft>{{ item.metaLeft }}</span>
+  <span *ngIf="item.metaRight" listRowMetaRight>{{ item.metaRight }}</span>
+  <span *ngIf="item.badge" listRowBadge>{{ item.badge.label }}</span>
+</app-list-row-card>

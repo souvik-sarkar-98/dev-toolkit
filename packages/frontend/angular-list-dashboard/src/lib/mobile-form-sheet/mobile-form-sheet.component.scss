@@ -1,0 +1,21 @@
+@use '../../styles/mobile-form-sheet' as sheet;
+
+@include sheet.mobile-form-sheet('mobile-form-sheet', (
+  z-backdrop: 250,
+  z-sheet: 251,
+  title-row-padding-x: 36px,
+  desktop-dialog: true,
+));
+
+@include sheet.mobile-form-sheet-hint('mobile-form-sheet');
+
+.mobile-form-sheet__body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.mobile-form-sheet__actions {
+  flex-shrink: 0;
+  padding-top: 0.5rem;
+}
