@@ -84,7 +84,7 @@ export function insertMentionInEditableText(
 ): { text: string; cursor: number } {
   const before = editableText.slice(0, cursor);
   const after = editableText.slice(cursor);
-  const atMatch = before.match(/@([^\s@]*)$/);
+  const atMatch = before.match(/@([^\s@[\]]*)$/);
   const replaceFrom = atMatch ? before.length - atMatch[0].length : cursor;
   const prefix = editableText.slice(0, replaceFrom);
   const insert = `@${mention.displayName} `;

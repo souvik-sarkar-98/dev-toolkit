@@ -10,6 +10,11 @@ import type {
   ListRowItem,
   RefDataMap,
 } from '@ssdev-toolkit/list-dashboard-core';
+import {
+  classifyDashboardRun,
+  resolvePreparedCreateOptions,
+  resolvePreparedFilterOptions,
+} from '@ssdev-toolkit/list-dashboard-core';
 import type { FormValues } from '@ssdev-toolkit/forms-core';
 import { Subscription, tap } from 'rxjs';
 import {
@@ -229,11 +234,10 @@ export class ListDashboardRuntime<
     selection: readonly TEntity[] = [],
     actionFormId?: string,
   ): void {
-    if (actionFormId) {
-      void this.openActionForm(actionFormId, selection[0]);
-      return;
-    }
-    switch (run) {
+    switch (classifyDashboardRun(run, actionFormId)) {
+      case 'openActionForm':
+        void this.openActionForm(actionFormId!, selection[0]);
+        return;
       case 'openCreate':
         void this.openCreate();
         return;
@@ -391,19 +395,21 @@ export class ListDashboardRuntime<
   }
 
   private syncFilterOptionsFromContext(): void {
-    const context = this.options?.preparationContext as Record<string, unknown> | undefined;
-    const donorOptions = context?.['donorOptions'];
-    if (Array.isArray(donorOptions)) {
-      this.dashboard.listPageAdapter.setAsyncFilterOptions(
-        donorOptions as { key: string; label: string }[],
-      );
+    const options = resolvePreparedFilterOptions(
+      this.options?.preparationContext,
+      this.options?.config.preparation?.contextBindings,
+    );
+    if (options) {
+      this.dashboard.listPageAdapter.setAsyncFilterOptions(options);
     }
   }
 
   private syncCreateContextFromPreparation(): void {
-    const context = this.options?.preparationContext as Record<string, unknown> | undefined;
-    const createOptions = context?.['createOptions'];
-    if (createOptions && typeof createOptions === 'object') {
+    const createOptions = resolvePreparedCreateOptions(
+      this.options?.preparationContext,
+      this.options?.config.preparation?.contextBindings,
+    );
+    if (createOptions) {
       Object.assign(this.dashboard.getCreateContext(), createOptions);
     }
   }

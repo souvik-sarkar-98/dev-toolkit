@@ -8,7 +8,14 @@ import {
     IPdfTableOptions,
     IPdfTableColumn,
     IPdfSectionContent,
+    IPdfDividerOptions,
+    IPdfListOptions,
+    IPdfSignatureOptions,
+    IPdfTemplateData,
+    IPdfTocEntry,
+    IPdfTocTextOptions,
     PdfPageSize,
+    PdfTableRow,
 } from '../interfaces/pdf-generator.interface';
 
 /**
@@ -66,7 +73,7 @@ class PdfSectionBuilder implements IPdfSectionBuilder {
         return this;
     }
 
-    addTable(data: any[][], options?: IPdfTableOptions): IPdfSectionBuilder {
+    addTable(data: PdfTableRow[], options?: IPdfTableOptions): IPdfSectionBuilder {
         this.contents.push({
             type: 'table',
             data,
@@ -75,7 +82,7 @@ class PdfSectionBuilder implements IPdfSectionBuilder {
         return this;
     }
 
-    addList(items: string[], options?: { ordered?: boolean; bulletChar?: string; indent?: number }): IPdfSectionBuilder {
+    addList(items: string[], options?: IPdfListOptions): IPdfSectionBuilder {
         this.contents.push({
             type: 'list',
             data: items,
@@ -88,7 +95,7 @@ class PdfSectionBuilder implements IPdfSectionBuilder {
         return this;
     }
 
-    addDivider(options?: { color?: string; thickness?: number }): IPdfSectionBuilder {
+    addDivider(options?: IPdfDividerOptions): IPdfSectionBuilder {
         this.contents.push({
             type: 'divider',
             data: null,
@@ -109,7 +116,7 @@ class PdfSectionBuilder implements IPdfSectionBuilder {
         return this;
     }
 
-    addSignatureSection(options?: { label?: string; dateLabel?: string; space?: number }): IPdfSectionBuilder {
+    addSignatureSection(options?: IPdfSignatureOptions): IPdfSectionBuilder {
         this.contents.push({
             type: 'signature',
             data: null,
@@ -195,8 +202,11 @@ export class PdfBuilderService implements IPdfBuilder {
         return this;
     }
 
-    setTemplate(templateName: string, data: any): IPdfBuilder {
-        console.warn('setTemplate is not natively supported by PDFKit engine. Use Puppeteer engine for HTML templates.');
+    setTemplate(templateName: string, data: IPdfTemplateData): IPdfBuilder {
+        console.warn(
+            `setTemplate('${templateName}') is not natively supported by PDFKit engine; ` +
+            `${Object.keys(data).length} template field(s) were ignored. Use Puppeteer engine for HTML templates.`,
+        );
         return this;
     }
 
@@ -334,11 +344,11 @@ export class PdfBuilderService implements IPdfBuilder {
         });
 
         // Get total page count
-        this.totalPages = (doc as any).bufferedPageRange().count;
+        this.totalPages = doc.bufferedPageRange().count;
 
         // Second pass: add footers with page numbers
         if (this.options.footer) {
-            const range = (doc as any).bufferedPageRange();
+            const range = doc.bufferedPageRange();
             for (let i = 0; i < range.count; i++) {
                 doc.switchToPage(i);
                 this.renderFooter(doc, i + 1);
@@ -609,13 +619,12 @@ export class PdfBuilderService implements IPdfBuilder {
         });
     }
 
-    private renderText(doc: PDFKit.PDFDocument, text: any, options?: IPdfTextOptions & { isTOC?: boolean }): void {
+    private renderText(doc: PDFKit.PDFDocument, text: string | IPdfTocEntry, options?: IPdfTocTextOptions): void {
         this.applyFontOptions(doc, options);
 
         if (options?.isTOC && typeof text === 'object') {
             const { title, page } = text;
             const margins = doc.page.margins;
-            const pageWidth = doc.page.width - margins.left - margins.right;
             const pageStr = page.toString();
             const y = doc.y;
 
@@ -669,7 +678,7 @@ export class PdfBuilderService implements IPdfBuilder {
         doc.moveDown(0.5);
     }
 
-    private renderTable(doc: PDFKit.PDFDocument, data: any[][], options?: IPdfTableOptions): void {
+    private renderTable(doc: PDFKit.PDFDocument, data: PdfTableRow[], options?: IPdfTableOptions): void {
         if (!data || data.length === 0) return;
 
         const startX = doc.page.margins.left;
@@ -679,8 +688,7 @@ export class PdfBuilderService implements IPdfBuilder {
         const borderColor = options?.borderColor || '#000000';
 
         const columns: IPdfTableColumn[] = options?.columns || data[0].map((_, i) => ({ header: `Column ${i + 1}` }));
-        const numColumns = columns.length;
-        const columnWidths = this.calculateColumnWidths(columns, pageWidth, numColumns);
+        const columnWidths = this.calculateColumnWidths(columns, pageWidth);
 
         let currentY = doc.y;
 
@@ -754,7 +762,7 @@ export class PdfBuilderService implements IPdfBuilder {
         doc.moveDown(0.5);
     }
 
-    private calculateColumnWidths(columns: any[], pageWidth: number, numColumns: number): number[] {
+    private calculateColumnWidths(columns: IPdfTableColumn[], pageWidth: number): number[] {
         const widths: number[] = [];
         let totalFixed = 0;
         let autoCount = 0;
@@ -772,10 +780,10 @@ export class PdfBuilderService implements IPdfBuilder {
         const remainingWidth = pageWidth - totalFixed;
         const autoWidth = autoCount > 0 ? remainingWidth / autoCount : 0;
 
-        return widths.map((w, i) => w === 0 ? autoWidth : w);
+        return widths.map((w) => w === 0 ? autoWidth : w);
     }
 
-    private calculateRowHeight(doc: PDFKit.PDFDocument, row: any[], columnWidths: number[], cellPadding: number, fontSize: number): number {
+    private calculateRowHeight(doc: PDFKit.PDFDocument, row: PdfTableRow, columnWidths: number[], cellPadding: number, fontSize: number): number {
         let maxHeight = fontSize + cellPadding * 2;
 
         row.forEach((cell, i) => {
@@ -789,7 +797,7 @@ export class PdfBuilderService implements IPdfBuilder {
         return maxHeight;
     }
 
-    private renderList(doc: PDFKit.PDFDocument, items: string[], options: { ordered?: boolean; bulletChar?: string; indent?: number }): void {
+    private renderList(doc: PDFKit.PDFDocument, items: string[], options: IPdfListOptions = {}): void {
         const indent = options.indent || 20;
         const bulletChar = options.bulletChar || '•';
 
@@ -803,7 +811,7 @@ export class PdfBuilderService implements IPdfBuilder {
         doc.moveDown(0.5);
     }
 
-    private renderDivider(doc: PDFKit.PDFDocument, options: { color?: string; thickness?: number }): void {
+    private renderDivider(doc: PDFKit.PDFDocument, options: IPdfDividerOptions = {}): void {
         const startX = doc.page.margins.left;
         const endX = doc.page.width - doc.page.margins.right;
         const y = doc.y + 10;
@@ -834,7 +842,7 @@ export class PdfBuilderService implements IPdfBuilder {
         doc.restore();
     }
 
-    private renderSignature(doc: PDFKit.PDFDocument, options?: { label?: string; dateLabel?: string; space?: number }): void {
+    private renderSignature(doc: PDFKit.PDFDocument, options?: IPdfSignatureOptions): void {
         const label = options?.label || 'Authorized Signature';
         const dateLabel = options?.dateLabel || 'Date';
         const space = options?.space || 60;

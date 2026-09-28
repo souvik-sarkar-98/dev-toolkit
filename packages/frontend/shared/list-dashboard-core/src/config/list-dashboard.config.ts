@@ -16,6 +16,7 @@ import type {
   ListPreparationTask,
   ListPreparationTrigger,
 } from '../runtime/list-preparation.runtime.js';
+import type { ListPreparedContextBindings } from '../runtime/prepared-context.js';
 
 export type ListDashboardHook = (...args: any[]) => unknown;
 
@@ -58,6 +59,11 @@ export interface ListDashboardBulkEditConfig<TEntity> extends BulkEditPageConfig
 export interface ListDashboardPreparationDefinition<TContext = unknown> {
   tasks: ListPreparationTask<TContext>[];
   triggers?: Partial<Record<ListPreparationTrigger, string[]>>;
+  /**
+   * Maps prepared context onto generic runtime slots (filter options, create
+   * context). Prefer `filterOptions` over app-specific keys.
+   */
+  contextBindings?: ListPreparedContextBindings;
 }
 
 export interface ListDashboardBehaviorDefinition {

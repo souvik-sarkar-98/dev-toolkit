@@ -100,11 +100,65 @@ export interface IPdfDocumentOptions extends IDocumentOptions {
     }[];
 }
 
-export interface IPdfSectionContent {
-    type: 'text' | 'heading' | 'paragraph' | 'image' | 'table' | 'list' | 'divider' | 'space' | 'pageBreak' | 'signature';
-    data: any;
-    options?: any;
+export type PdfTableCellValue = string | number | boolean | Date | null | undefined;
+export type PdfTableRow = PdfTableCellValue[];
+
+export interface IPdfTocEntry {
+    title: string;
+    page: string | number;
 }
+
+export interface IPdfHeadingOptions extends IPdfTextOptions {
+    level?: 1 | 2 | 3 | 4;
+}
+
+export interface IPdfTocTextOptions extends IPdfTextOptions {
+    isTOC?: boolean;
+}
+
+export interface IPdfListOptions {
+    ordered?: boolean;
+    bulletChar?: string;
+    indent?: number;
+}
+
+export interface IPdfDividerOptions {
+    color?: string;
+    thickness?: number;
+}
+
+export interface IPdfSignatureOptions {
+    label?: string;
+    dateLabel?: string;
+    space?: number;
+}
+
+/** Values a Handlebars template may receive through {@link IPdfTemplateData}. */
+export type PdfTemplateValue =
+    | string
+    | number
+    | boolean
+    | Date
+    | null
+    | undefined
+    | PdfTemplateValue[]
+    | { [key: string]: PdfTemplateValue };
+
+export interface IPdfTemplateData {
+    [key: string]: PdfTemplateValue;
+}
+
+export type IPdfSectionContent =
+    | { type: 'heading'; data: string; options?: IPdfHeadingOptions }
+    | { type: 'paragraph'; data: string; options?: IPdfTextOptions }
+    | { type: 'text'; data: string | IPdfTocEntry; options?: IPdfTocTextOptions }
+    | { type: 'image'; data: string | Buffer; options?: IPdfImageOptions }
+    | { type: 'table'; data: PdfTableRow[]; options?: IPdfTableOptions }
+    | { type: 'list'; data: string[]; options?: IPdfListOptions }
+    | { type: 'divider'; data: null; options?: IPdfDividerOptions }
+    | { type: 'space'; data: number; options?: IPdfTextOptions }
+    | { type: 'pageBreak'; data: null; options?: IPdfTextOptions }
+    | { type: 'signature'; data: null; options?: IPdfSignatureOptions };
 
 export interface IPdfSection {
     title?: string;
@@ -132,11 +186,11 @@ export interface IPdfSectionBuilder {
     addParagraph(text: string, options?: IPdfTextOptions): IPdfSectionBuilder;
     addText(text: string, options?: IPdfTextOptions): IPdfSectionBuilder;
     addImage(source: string | Buffer, options?: IPdfImageOptions): IPdfSectionBuilder;
-    addTable(data: any[][], options?: IPdfTableOptions): IPdfSectionBuilder;
-    addList(items: string[], options?: { ordered?: boolean; bulletChar?: string; indent?: number }): IPdfSectionBuilder;
-    addDivider(options?: { color?: string; thickness?: number }): IPdfSectionBuilder;
+    addTable(data: PdfTableRow[], options?: IPdfTableOptions): IPdfSectionBuilder;
+    addList(items: string[], options?: IPdfListOptions): IPdfSectionBuilder;
+    addDivider(options?: IPdfDividerOptions): IPdfSectionBuilder;
     addSpace(height?: number): IPdfSectionBuilder;
     addTOCEntry(title: string, page: string | number, options?: IPdfTextOptions): IPdfSectionBuilder;
-    addSignatureSection(options?: { label?: string; dateLabel?: string; space?: number }): IPdfSectionBuilder;
+    addSignatureSection(options?: IPdfSignatureOptions): IPdfSectionBuilder;
     endSection(): IPdfBuilder;
 }

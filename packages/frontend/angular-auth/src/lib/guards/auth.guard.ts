@@ -1,15 +1,36 @@
 import { inject } from '@angular/core';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
+import {
+  applyAuthGuardDecision,
+  decideAuthGuard,
+  decideNoAuthGuard,
+} from '@ssdev-toolkit/auth-core';
 import { USER_IDENTITY } from '../tokens/user-identity.token';
 import { AUTH_CONFIG } from '../tokens/auth-config.token';
+import { sanitizeInternalRedirectUrl } from '../utils/redirect-url.util';
 
 export { permissionGuard, PermissionGuardOptions } from './permission.guard';
 
-/**
- * Redirects unauthenticated users to `AuthConfig.loginUrl`.
- * Preserves the originally requested URL in router state as `redirect_to`.
- * No bypass logic — apps that need a dev bypass should wrap this guard.
- */
+function routerNavigation(router: Router, loginUrl: string, postLoginUrl: string) {
+  return {
+    goToLogin(redirectTo?: string) {
+      const safe = redirectTo ? sanitizeInternalRedirectUrl(redirectTo, '') : '';
+      if (safe) {
+        router.navigate([loginUrl], { state: { redirect_to: safe } });
+      } else {
+        router.navigate([loginUrl]);
+      }
+    },
+    goTo(url: string) {
+      if (url === postLoginUrl || url.startsWith('/')) {
+        router.navigateByUrl(url);
+      } else {
+        router.navigate([url]);
+      }
+    },
+  };
+}
+
 export async function authGuard(
   _route: ActivatedRouteSnapshot,
   state: RouterStateSnapshot,
@@ -17,33 +38,20 @@ export async function authGuard(
   const identityService = inject(USER_IDENTITY);
   const router = inject(Router);
   const config = inject(AUTH_CONFIG);
-
-  if (await identityService.isUserLoggedIn()) {
-    return true;
-  }
-
-  const request_uri = state.url;
-  const redirect_to = request_uri !== '/' ? request_uri : undefined;
-  if (redirect_to) {
-    router.navigate([config.loginUrl], { state: { redirect_to } });
-  } else {
-    router.navigate([config.loginUrl]);
-  }
-  return false;
+  const loggedIn = await identityService.isUserLoggedIn();
+  return applyAuthGuardDecision(
+    decideAuthGuard(loggedIn, state.url),
+    routerNavigation(router, config.loginUrl, config.postLoginUrl),
+  );
 }
 
-/**
- * Redirects already-authenticated users to `AuthConfig.postLoginUrl`.
- * No bypass logic — apps that need a dev bypass should wrap this guard.
- */
 export async function noAuthGuard(): Promise<boolean> {
   const identityService = inject(USER_IDENTITY);
   const router = inject(Router);
   const config = inject(AUTH_CONFIG);
-
-  if (await identityService.isUserLoggedIn()) {
-    router.navigateByUrl(config.postLoginUrl);
-    return false;
-  }
-  return true;
+  const loggedIn = await identityService.isUserLoggedIn();
+  return applyAuthGuardDecision(
+    decideNoAuthGuard(loggedIn, config.postLoginUrl),
+    routerNavigation(router, config.loginUrl, config.postLoginUrl),
+  );
 }

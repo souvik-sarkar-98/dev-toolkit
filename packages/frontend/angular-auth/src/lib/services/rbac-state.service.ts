@@ -1,11 +1,16 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { RbacUserAccessSnapshot } from '@ssdev-toolkit/auth-core';
+import {
+  RbacSession,
+  type RbacLoadState,
+  type RbacUserAccessSnapshot,
+} from '@ssdev-toolkit/auth-core';
 
-export type RbacLoadState = 'idle' | 'loading' | 'loaded' | 'failed' | 'cleared';
+export type { RbacLoadState };
 
 @Injectable({ providedIn: 'root' })
 export class RbacStateService<T extends RbacUserAccessSnapshot = RbacUserAccessSnapshot> {
+  readonly session = new RbacSession<T>();
   private readonly snapshotSubject = new BehaviorSubject<T | null>(null);
   private readonly loadedSubject = new BehaviorSubject<boolean>(false);
   private readonly loadStateSubject = new BehaviorSubject<RbacLoadState>('idle');
@@ -15,40 +20,46 @@ export class RbacStateService<T extends RbacUserAccessSnapshot = RbacUserAccessS
   readonly loadState$ = this.loadStateSubject.asObservable();
 
   get snapshot(): T | null {
-    return this.snapshotSubject.value;
+    return this.session.snapshot;
   }
 
   get loaded(): boolean {
-    return this.loadedSubject.value;
+    return this.session.loaded;
   }
 
   get loadState(): RbacLoadState {
-    return this.loadStateSubject.value;
+    return this.session.loadState;
   }
 
   get idpSub(): string | undefined {
-    return this.snapshotSubject.value?.idpSub;
+    return this.session.snapshot && 'idpSub' in this.session.snapshot
+      ? (this.session.snapshot as T).idpSub
+      : undefined;
   }
 
   beginLoad(): void {
-    this.loadStateSubject.next('loading');
+    this.session.beginLoad();
+    this.sync();
   }
 
   setSnapshot(snapshot: T): void {
-    this.snapshotSubject.next(snapshot);
-    this.loadedSubject.next(true);
-    this.loadStateSubject.next('loaded');
+    this.session.setSnapshot(snapshot);
+    this.sync();
   }
 
   markFailed(): void {
-    this.snapshotSubject.next(null);
-    this.loadedSubject.next(false);
-    this.loadStateSubject.next('failed');
+    this.session.markFailed();
+    this.sync();
   }
 
   clear(): void {
-    this.snapshotSubject.next(null);
-    this.loadedSubject.next(false);
-    this.loadStateSubject.next('cleared');
+    this.session.clear();
+    this.sync();
+  }
+
+  private sync(): void {
+    this.snapshotSubject.next(this.session.snapshot);
+    this.loadedSubject.next(this.session.loaded);
+    this.loadStateSubject.next(this.session.loadState);
   }
 }

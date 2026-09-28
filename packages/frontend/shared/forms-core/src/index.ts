@@ -36,6 +36,27 @@ export {
   resolveFieldOptions,
 } from './engine/form-engine.js';
 export { FormEngine } from './engine/form-engine-class.js';
+export { getVisibleSubmitValues } from './engine/submit-values.js';
+export { mergeStepValues } from './engine/merge-step-values.js';
+export { isSameFormValue, hasSameFormValues } from './engine/form-values-equal.js';
+export {
+  FormStepperEngine,
+} from './engine/form-stepper-engine.js';
+export type {
+  FormStepperStep,
+  FormStepperStepChange,
+  FormStepperState,
+  FormStepperBuildDefinition,
+  FormStepperResolveSteps,
+  FormStepperValidateStep,
+  FormStepperPrepareStep,
+  FormStepperCustomStepValidator,
+  FormStepperNextInput,
+  FormStepperBackResult,
+  FormStepperNextResult,
+  FormStepperEnterResult,
+  FormStepperEngineOptions,
+} from './engine/form-stepper-engine.js';
 export { normalizeFieldType } from './adapters/normalize-field-type.js';
 export { fromPublicFormDefinition } from './adapters/from-public-api.js';
 export {

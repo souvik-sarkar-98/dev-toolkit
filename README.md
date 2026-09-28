@@ -1,4 +1,4 @@
-# SSDev Toolkit
+# Dev Toolkit
 
 npm workspaces + [Turborepo](https://turbo.build/) of **shared backend and frontend libraries**. This repository publishes `@ssdev-toolkit/*` packages; applications live in separate repos and consume these libraries from npm or a workspace link.
 

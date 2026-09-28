@@ -54,15 +54,7 @@ export function useCustomForm({
     [engine, rerender],
   );
 
-  const getSubmitValues = useCallback((): FormValues => {
-    const visibleKeys = new Set(engine.getVisibleFields().map((f) => f.definition.key));
-    const all = engine.getValues();
-    const out: FormValues = {};
-    for (const [key, value] of Object.entries(all)) {
-      if (visibleKeys.has(key)) out[key] = value;
-    }
-    return out;
-  }, [engine]);
+  const getSubmitValues = useCallback((): FormValues => engine.getSubmitValues(), [engine]);
 
   return {
     values,

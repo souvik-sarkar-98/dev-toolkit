@@ -5,10 +5,10 @@ These folders are **not** npm workspaces and are **not** published.
 
 | Library | Role |
 |---------|------|
-| `forms-core` | Models, visibility/dependency engine, validation, API adapters |
-| `comment-core` | Mention tokens, comment editor value builders |
-| `list-dashboard-core` | Unified list/detail/form config, form resolution, preparation |
-| `auth-core` | Auth user / RBAC models and helpers |
+| `forms-core` | Visibility, validation, submit extraction, stepper engine, serialization |
+| `comment-core` | Mention tokens and autocomplete state machine |
+| `list-dashboard-core` | List config, preparation, pagination/filter/action state |
+| `auth-core` | RBAC session, guard decisions, redirect sanitization |
 
 Adapters import them as `@ssdev-toolkit/*-core` via TypeScript path aliases
 (`packages/frontend/tsconfig.json`). Angular adapters `file:`-link the cores

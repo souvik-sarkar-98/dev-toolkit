@@ -9,6 +9,8 @@ import {
     IExcelRowData,
     IExcelCellStyle,
     IExcelColumnDefinition,
+    ExcelCellValue,
+    ExcelImageRange,
 } from '../interfaces/excel-generator.interface';
 
 /**
@@ -164,7 +166,7 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
         });
     }
 
-    setCell(row: number, col: number | string, value: any, style?: IExcelCellStyle): IExcelSheetBuilder {
+    setCell(row: number, col: number | string, value: ExcelCellValue, style?: IExcelCellStyle): IExcelSheetBuilder {
         const cell = this.worksheet.getCell(row, typeof col === 'string' ? this.columnLetterToNumber(col) : col);
         cell.value = value;
 
@@ -241,7 +243,7 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
     /**
      * Add an image to the sheet
      */
-    addImage(imageBuffer: Buffer, extension: 'png' | 'jpeg' | 'gif', range: string | any): IExcelSheetBuilder {
+    addImage(imageBuffer: Buffer, extension: 'png' | 'jpeg' | 'gif', range: ExcelImageRange): IExcelSheetBuilder {
         const imageId = this.workbook.addImage({
             buffer: imageBuffer as unknown as ExcelJS.Buffer,
             extension,

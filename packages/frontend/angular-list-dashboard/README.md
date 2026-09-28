@@ -53,13 +53,18 @@ invoke `config.operations[linkId]`.
 ## Public surface
 
 - `ListDashboardComponent` (`na-list-dashboard`)
-- `ListDashboardRuntime`, form cache, preparation service
+- `ListDashboardRuntime`, form cache, preparation service (wraps `ListPreparationSession` in core)
 - Projection directives: `listRow`, `listBulkActions`, `listFloatingActions`,
   `listDetailFooterActions`, `listOverlay`
 - Existing list/filter/detail/create sheet components
 - `ListActionFormController` + shared stepper host (create, detail edit, bulk edit,
   `actionForms`) and `provideListFormCustomStepRenderer(rendererKey, component)`
   for `kind: 'custom'` steps
+
+Filter option hydration uses `filterOptions` on the preparation context (legacy
+`donorOptions` is still accepted as an alias). Prefer
+`preparation.contextBindings`.
+
 
 ## Docs
 

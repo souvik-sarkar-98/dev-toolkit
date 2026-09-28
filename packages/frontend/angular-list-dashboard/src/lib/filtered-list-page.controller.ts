@@ -7,6 +7,12 @@ import {
   ChipFilter,
   ListFilterCriteria,
   ListRowItem,
+  applyInfiniteListPage,
+  beginInfiniteListLoad,
+  canLoadMore,
+  createDebouncedRunner,
+  failInfiniteListLoad,
+  LoadGeneration,
 } from '@ssdev-toolkit/list-dashboard-core';
 import { FilteredListPageAdapter } from '@ssdev-toolkit/list-dashboard-core';
 import { ConfiguredListPageAdapter } from '@ssdev-toolkit/list-dashboard-core';
@@ -57,7 +63,8 @@ export class FilteredListPageController<TCriteria extends ListFilterCriteria = L
   private refData: RefDataMap = {};
   private listPageIndex = 0;
   private listSub = new Subscription();
-  private searchDebounce?: ReturnType<typeof setTimeout>;
+  private readonly searchDebounce = createDebouncedRunner();
+  private readonly loadGeneration = new LoadGeneration();
   private resolveInitialState?: FilteredListPageInitOptions<TCriteria>['resolveInitialState'];
   private onBeforeRouteStateApply?: () => void;
   private onAfterListLoaded?: () => void;
@@ -91,9 +98,7 @@ export class FilteredListPageController<TCriteria extends ListFilterCriteria = L
 
   destroy(): void {
     this.listSub.unsubscribe();
-    if (this.searchDebounce) {
-      clearTimeout(this.searchDebounce);
-    }
+    this.loadGeneration.next();
   }
 
   setRefData(refData: RefDataMap): void {
@@ -122,11 +127,8 @@ export class FilteredListPageController<TCriteria extends ListFilterCriteria = L
 
   onSearchChange(value: string): void {
     this.listSearchText = value;
-    if (this.searchDebounce) {
-      clearTimeout(this.searchDebounce);
-    }
     const delay = this.adapter.searchDebounceMs ?? 300;
-    this.searchDebounce = setTimeout(() => this.loadListPage(0, false), delay);
+    this.searchDebounce(delay, () => this.loadListPage(0, false));
   }
 
   onFilterOpen(): void {
@@ -189,7 +191,13 @@ export class FilteredListPageController<TCriteria extends ListFilterCriteria = L
   }
 
   onLoadMore(): void {
-    if (this.listLoading || this.listLoadingMore || !this.listHasMore) {
+    if (!canLoadMore({
+      items: this.listItems,
+      pageIndex: this.listPageIndex,
+      hasMore: this.listHasMore,
+      loading: this.listLoading,
+      loadingMore: this.listLoadingMore,
+    })) {
       return;
     }
     this.loadListPage(this.listPageIndex + 1, true);
@@ -272,12 +280,22 @@ export class FilteredListPageController<TCriteria extends ListFilterCriteria = L
   }
 
   private loadListPage(pageIndex: number, append: boolean): void {
-    if (append) {
-      this.listLoadingMore = true;
-    } else {
-      this.listLoading = true;
-      this.listPageIndex = 0;
-      this.listHasMore = false;
+    const generation = this.loadGeneration.next();
+    const started = beginInfiniteListLoad(
+      {
+        items: this.listItems,
+        pageIndex: this.listPageIndex,
+        hasMore: this.listHasMore,
+        loading: this.listLoading,
+        loadingMore: this.listLoadingMore,
+      },
+      append,
+    );
+    this.listLoading = started.loading;
+    this.listLoadingMore = started.loadingMore;
+    if (!append) {
+      this.listPageIndex = started.pageIndex;
+      this.listHasMore = started.hasMore;
       this.clearSelection();
     }
 
@@ -291,18 +309,37 @@ export class FilteredListPageController<TCriteria extends ListFilterCriteria = L
         searchText: this.listSearchText,
       }).subscribe({
         next: page => {
-          this.listPageIndex = page.pageIndex;
-          this.listItems = append ? [...this.listItems, ...page.items] : page.items;
-          const loadedCount = (page.pageIndex + 1) * page.pageSize;
-          this.listHasMore = loadedCount < page.totalSize;
-          this.listLoading = false;
-          this.listLoadingMore = false;
+          if (!this.loadGeneration.isCurrent(generation)) return;
+          const next = applyInfiniteListPage(
+            {
+              items: this.listItems,
+              pageIndex: this.listPageIndex,
+              hasMore: this.listHasMore,
+              loading: this.listLoading,
+              loadingMore: this.listLoadingMore,
+            },
+            page,
+            append,
+          );
+          this.listPageIndex = next.pageIndex;
+          this.listItems = next.items;
+          this.listHasMore = next.hasMore;
+          this.listLoading = next.loading;
+          this.listLoadingMore = next.loadingMore;
           this.onAfterListLoaded?.();
         },
         error: () => {
-          this.listLoading = false;
-          this.listLoadingMore = false;
-          this.listHasMore = false;
+          if (!this.loadGeneration.isCurrent(generation)) return;
+          const next = failInfiniteListLoad({
+            items: this.listItems,
+            pageIndex: this.listPageIndex,
+            hasMore: this.listHasMore,
+            loading: this.listLoading,
+            loadingMore: this.listLoadingMore,
+          });
+          this.listLoading = next.loading;
+          this.listLoadingMore = next.loadingMore;
+          this.listHasMore = next.hasMore;
           this.onAfterListLoaded?.();
         },
       }),

@@ -32,6 +32,11 @@ Document list / file-upload widgets and Material sheets stay Angular-only.
 Bind the same `ListDashboardConfig`; nested collections still use
 `type: 'item_list'` sections.
 
+Pagination, search debounce, action visibility, and stale-load protection live
+in `list-dashboard-core`. This package only binds React state and optional
+in-memory route sync.
+
+
 ## Public surface
 
 - `ListDashboard`

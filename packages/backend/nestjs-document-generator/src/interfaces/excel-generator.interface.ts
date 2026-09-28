@@ -1,3 +1,4 @@
+import type { ConditionalFormattingRule, Worksheet } from 'exceljs';
 import { IDocumentOptions } from './common.interface';
 
 /**
@@ -51,8 +52,26 @@ export interface IExcelColumnDefinition {
     hidden?: boolean;
 }
 
+export type ExcelCellPrimitive = string | number | boolean | Date | null | undefined;
+
+export interface IExcelFormulaValue {
+    formula: string;
+    result?: string | number | Date;
+}
+
+export interface IExcelHyperlinkValue {
+    text: string;
+    hyperlink: string;
+    tooltip?: string;
+}
+
+export type ExcelCellValue = ExcelCellPrimitive | IExcelFormulaValue | IExcelHyperlinkValue;
+
+/** Anchor or `'A1:D4'` style range accepted when placing an image on a sheet. */
+export type ExcelImageRange = Parameters<Worksheet['addImage']>[1];
+
 export interface IExcelRowData {
-    [key: string]: any;
+    [key: string]: ExcelCellValue;
 }
 
 export interface IExcelSheetOptions {
@@ -93,14 +112,14 @@ export interface IExcelBuilder {
 export interface IExcelSheetBuilder {
     addRow(data: IExcelRowData, style?: IExcelCellStyle): IExcelSheetBuilder;
     addRows(data: IExcelRowData[]): IExcelSheetBuilder;
-    setCell(row: number, col: number | string, value: any, style?: IExcelCellStyle): IExcelSheetBuilder;
+    setCell(row: number, col: number | string, value: ExcelCellValue, style?: IExcelCellStyle): IExcelSheetBuilder;
     mergeCells(startRow: number, startCol: number, endRow: number, endCol: number): IExcelSheetBuilder;
     setColumnWidth(col: number | string, width: number): IExcelSheetBuilder;
     setRowHeight(row: number, height: number): IExcelSheetBuilder;
-    addConditionalFormatting(range: string, rules: any): IExcelSheetBuilder;
+    addConditionalFormatting(range: string, rules: ConditionalFormattingRule[]): IExcelSheetBuilder;
     addFormula(row: number, col: number | string, formula: string, style?: IExcelCellStyle): IExcelSheetBuilder;
     addHyperlink(row: number, col: number | string, text: string, url: string, style?: IExcelCellStyle): IExcelSheetBuilder;
-    addImage(imageBuffer: Buffer, extension: 'png' | 'jpeg' | 'gif', range: string | any): IExcelSheetBuilder;
+    addImage(imageBuffer: Buffer, extension: 'png' | 'jpeg' | 'gif', range: ExcelImageRange): IExcelSheetBuilder;
     addReportHeader(options: { title: string; subtitle?: string; mergeColumns?: number; generationDate?: Date }): IExcelSheetBuilder;
     endSheet(): IExcelBuilder;
 }

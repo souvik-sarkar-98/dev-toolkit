@@ -21,6 +21,8 @@ import {
   deduplicateMentions,
   getActiveMentionQuery,
   insertMentionInEditableText,
+  MentionAutocompleteController,
+  mentionCommandFromKey,
 } from '@ssdev-toolkit/comment-core';
 import { CommentContentComponent } from './comment-content.component';
 import { MENTION_USER_SEARCH, type MentionUserSearchFn } from './tokens';
@@ -181,8 +183,7 @@ export class MentionCommentEditorComponent implements ControlValueAccessor {
   activeIndex = 0;
   private cursor = 0;
   private mentionList: MentionCandidate[] = [];
-  private searchTimer?: ReturnType<typeof setTimeout>;
-  private requestId = 0;
+  private autocomplete?: MentionAutocompleteController;
 
   private onChange: (value: CommentEditorValue) => void = () => undefined;
   private onTouched: () => void = () => undefined;
@@ -232,36 +233,18 @@ export class MentionCommentEditorComponent implements ControlValueAccessor {
   }
 
   onKeyDown(event: KeyboardEvent): void {
-    if (!this.mentionOpen || this.candidates.length === 0) {
+    const command = mentionCommandFromKey(event.key);
+    if (!command || !this.autocomplete) {
       return;
     }
-
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      this.activeIndex = (this.activeIndex + 1) % this.candidates.length;
+    const result = this.autocomplete.handleCommand(command);
+    if (!result.consumed) {
       return;
     }
-
-    if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      this.activeIndex =
-        (this.activeIndex - 1 + this.candidates.length) % this.candidates.length;
-      return;
-    }
-
-    if (event.key === 'Enter' || event.key === 'Tab') {
-      event.preventDefault();
-      const candidate = this.candidates[this.activeIndex];
-      if (candidate) {
-        this.applyCandidate(candidate);
-      }
-      return;
-    }
-
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      this.candidates = [];
-      this.mentionOpen = false;
+    event.preventDefault();
+    this.syncFromAutocomplete();
+    if (result.selected) {
+      this.applyCandidate(result.selected);
     }
   }
 
@@ -280,6 +263,7 @@ export class MentionCommentEditorComponent implements ControlValueAccessor {
     this.cursor = result.cursor;
     this.value = buildCommentEditorValue(this.editableText, this.mentionList);
     this.onChange(this.value);
+    this.autocomplete?.selectCandidate(candidate);
     this.candidates = [];
     this.mentionOpen = false;
 
@@ -300,36 +284,29 @@ export class MentionCommentEditorComponent implements ControlValueAccessor {
       return;
     }
 
+    if (!this.autocomplete) {
+      this.autocomplete = new MentionAutocompleteController({
+        searchUsers,
+        minQueryLength: this.minMentionQueryLength,
+        debounceMs: this.debounceMs,
+        onChange: () => {
+          this.syncFromAutocomplete();
+          this.cdr.markForCheck();
+        },
+      });
+    }
+
     const query = getActiveMentionQuery(this.editableText, this.cursor);
-    if (query === null || query.length < this.minMentionQueryLength) {
-      this.mentionOpen = query !== null;
-      this.candidates = [];
-      this.loading = false;
-      this.cdr.markForCheck();
-      return;
-    }
+    this.autocomplete.setQuery(query);
+    this.syncFromAutocomplete();
+  }
 
-    this.mentionOpen = true;
-    this.loading = true;
-    const requestId = ++this.requestId;
-
-    if (this.searchTimer) {
-      clearTimeout(this.searchTimer);
-    }
-
-    this.searchTimer = setTimeout(() => {
-      void Promise.resolve(searchUsers(query))
-        .then((results) => {
-          if (requestId !== this.requestId) return;
-          this.candidates = results;
-          this.activeIndex = 0;
-        })
-        .finally(() => {
-          if (requestId === this.requestId) {
-            this.loading = false;
-            this.cdr.markForCheck();
-          }
-        });
-    }, this.debounceMs);
+  private syncFromAutocomplete(): void {
+    const state = this.autocomplete?.getState();
+    if (!state) return;
+    this.mentionOpen = state.open;
+    this.loading = state.loading;
+    this.candidates = state.candidates;
+    this.activeIndex = state.activeIndex;
   }
 }

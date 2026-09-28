@@ -1,35 +1,17 @@
+import { sanitizeInternalRedirectUrl as sanitizeInternalRedirectUrlCore } from '@ssdev-toolkit/auth-core';
+
 /**
  * Returns url when it is a safe same-app relative path; otherwise fallback.
- * Rejects protocol-relative paths (//), absolute URLs, backslashes, and empty values.
+ * Host-only: reads `window.location.origin` when present.
  */
 export function sanitizeInternalRedirectUrl(
   url: string | undefined | null,
   fallback: string,
 ): string {
-  if (!url || typeof url !== 'string') {
-    return fallback;
-  }
-
-  const trimmed = url.trim();
-  if (!trimmed.startsWith('/') || trimmed.startsWith('//')) {
-    return fallback;
-  }
-
-  if (trimmed.includes('\\') || /[\u0000-\u001F\u007F]/.test(trimmed)) {
-    return fallback;
-  }
-
-  if (typeof window === 'undefined' || !window.location?.origin) {
-    return trimmed;
-  }
-
-  try {
-    const resolved = new URL(trimmed, window.location.origin);
-    if (resolved.origin !== window.location.origin) {
-      return fallback;
-    }
-    return resolved.pathname + resolved.search + resolved.hash;
-  } catch {
-    return fallback;
-  }
+  const origin =
+    typeof globalThis !== 'undefined'
+    && typeof (globalThis as { window?: { location?: { origin?: string } } }).window !== 'undefined'
+      ? (globalThis as { window: { location?: { origin?: string } } }).window.location?.origin
+      : undefined;
+  return sanitizeInternalRedirectUrlCore(url, fallback, origin);
 }

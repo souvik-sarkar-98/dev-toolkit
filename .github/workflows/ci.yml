@@ -5,9 +5,10 @@ on:
     branches: 
        - main
        - stage
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened]
     paths-ignore:
     - '.github/**'
+    - '.changeset/**'
 
 concurrency:
   group: ci-${{ github.event.pull_request.number }}

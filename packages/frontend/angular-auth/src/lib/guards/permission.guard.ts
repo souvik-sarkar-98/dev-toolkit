@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { RbacEntityContext } from '@ssdev-toolkit/auth-core';
+import { RbacEntityContext, applyAuthGuardDecision, decidePermissionGuard } from '@ssdev-toolkit/auth-core';
 import { RbacNotLoadedError } from '../errors/rbac-load.error';
 import { AuthorizationService } from '../services/authorization.service';
 import { AUTH_CONFIG } from '../tokens/auth-config.token';
@@ -10,7 +10,6 @@ export interface PermissionGuardOptions {
   requireAll?: boolean;
 }
 
-/** Route guard factory — waits for RBAC load then checks permissions. */
 export function permissionGuard(
   required: string | string[],
   options?: PermissionGuardOptions,
@@ -26,8 +25,18 @@ export function permissionGuard(
       await authorization.waitUntilLoaded();
     } catch (error) {
       if (error instanceof RbacNotLoadedError) {
-        router.navigate([config.loginUrl]);
-        return false;
+        return applyAuthGuardDecision(
+          decidePermissionGuard({
+            rbacAvailable: false,
+            allowed: false,
+            loginUrl: config.loginUrl,
+            postLoginUrl: config.postLoginUrl,
+          }),
+          {
+            goToLogin: () => router.navigate([config.loginUrl]),
+            goTo: (url) => router.navigateByUrl(url),
+          },
+        );
       }
       throw error;
     }
@@ -39,11 +48,17 @@ export function permissionGuard(
       ? permissions.every(check)
       : permissions.some(check);
 
-    if (allowed) {
-      return true;
-    }
-
-    router.navigateByUrl(config.postLoginUrl);
-    return false;
+    return applyAuthGuardDecision(
+      decidePermissionGuard({
+        rbacAvailable: true,
+        allowed,
+        loginUrl: config.loginUrl,
+        postLoginUrl: config.postLoginUrl,
+      }),
+      {
+        goToLogin: () => router.navigate([config.loginUrl]),
+        goTo: (url) => router.navigateByUrl(url),
+      },
+    );
   };
 }

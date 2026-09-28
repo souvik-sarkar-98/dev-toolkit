@@ -25,6 +25,12 @@ function applyValidationRules(
   return schema;
 }
 
+/**
+ * @deprecated Prefer `validateForm` / `FormEngine.validate` from
+ * `@ssdev-toolkit/forms-core`. This Zod builder is a limited optional helper
+ * for React Hook Form only: it does not encode visibility, dependent options,
+ * date bounds, phone emptiness, permissions, or cross-field step rules.
+ */
 export function buildFormZodSchema(fields: FormFieldDefinition[]) {
   const shape: Record<string, z.ZodTypeAny> = {};
 

@@ -3,6 +3,8 @@ import {
   buildCommentEditorValue,
   contentToEditableText,
   editableTextToContent,
+  getActiveMentionQuery,
+  insertMentionInEditableText,
   parseContentSegments,
   parseMentionedUserIds,
   syncMentionsWithContent,
@@ -56,5 +58,12 @@ describe('mention tokens', () => {
       { type: 'mention', text: '@Alice Smith', userId: 'user-alice' },
       { type: 'text', text: '!' },
     ]);
+  });
+
+  it('detects and inserts mention queries with the same trailing-@ rule', () => {
+    expect(getActiveMentionQuery('Hello @Al', 9)).toBe('Al');
+    expect(getActiveMentionQuery('Hello @[x', 9)).toBeNull();
+    const inserted = insertMentionInEditableText('Hello @Al', 9, alice);
+    expect(inserted.text).toBe('Hello @Alice Smith ');
   });
 });
