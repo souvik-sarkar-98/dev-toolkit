@@ -187,15 +187,7 @@ export class PuppeteerPdfBuilderService implements IPdfBuilder {
     private sections: { title?: string; contents: IPdfSectionContent[] }[] = [];
     private customStyles: string[] = [];
 
-    private static readonly PAPER_FORMATS: Record<PdfPageSize, puppeteerType.PaperFormat> = {
-        A4: 'a4',
-        A3: 'a3',
-        LETTER: 'letter',
-        LEGAL: 'legal',
-        TABLOID: 'tabloid',
-    };
-
-    constructor(private readonly templatesDir?: string) {}
+    constructor(private readonly templatesDir?: string) { }
 
     setOptions(options: IPdfDocumentOptions): IPdfBuilder {
         this.options = { ...this.options, ...options };
@@ -328,7 +320,7 @@ export class PuppeteerPdfBuilderService implements IPdfBuilder {
                         element.alignStyle = c.options?.align ? `text-align: ${c.options.align};` : '';
                         break;
                     case 'table': {
-                        const options: IPdfTableOptions | undefined = c.options;
+                        const options = c.options as IPdfTableOptions;
                         element.tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; border: ${options?.borderWidth || 1}px solid ${options?.borderColor || '#e5e7eb'}; font-size: ${options?.rowFontSize || 10}pt;`;
                         element.headerStyle = `background-color: ${options?.headerBackground || '#f8fafc'}; color: ${options?.headerTextColor || '#333'}; font-size: ${options?.headerFontSize || 10}pt;`;
                         element.borderColor = options?.borderColor || '#e5e7eb';

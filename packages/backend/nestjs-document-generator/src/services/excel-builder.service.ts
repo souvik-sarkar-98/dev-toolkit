@@ -271,7 +271,7 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
 
     addReportHeader(options: { title: string; subtitle?: string; mergeColumns?: number; generationDate?: Date }): IExcelSheetBuilder {
         const mergeCols = options.mergeColumns || 3;
-        
+
         // ── Letterhead (rows 1-4) ──────────────────────────────────────────────
         this.mergeCells(1, 1, 1, mergeCols);
         this.setRowHeight(1, 38);
@@ -305,7 +305,7 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
 
         const date = options.generationDate || new Date();
         const formattedDate = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
-        
+
         this.mergeCells(8, 1, 8, mergeCols);
         this.setRowHeight(8, 20);
         this.setCell(8, 1, `Generated on: ${formattedDate}`, {
