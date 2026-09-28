@@ -27,3 +27,17 @@ export { USER_IDENTITY, UserIdentityFacade } from './lib/tokens/user-identity.to
 
 // Utils
 export { sanitizeInternalRedirectUrl } from './lib/utils/redirect-url.util';
+export {
+  decideAuthGuard,
+  decideNoAuthGuard,
+  decidePermissionGuard,
+  applyAuthGuardDecision,
+  loadRbacAfterLogin,
+  RbacSession,
+} from '@ssdev-toolkit/auth-core';
+export type {
+  AuthGuardDecision,
+  NavigationExecutor,
+  IdentityProvider,
+  RbacLoader,
+} from '@ssdev-toolkit/auth-core';

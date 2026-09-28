@@ -12,6 +12,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import type { FormDefinition, FormEngineOptions, FormValues } from '@ssdev-toolkit/forms-core';
+import { FormStepperEngine } from '@ssdev-toolkit/forms-core';
 import { CfFormComponent } from './cf-form.component';
 import { CfFormStepperStepDirective } from './cf-form-stepper-step.directive';
 import type {
@@ -136,45 +137,42 @@ export class CfFormStepperComponent<T extends string = string> implements OnChan
   /** Optional validator registered by custom step content. */
   customStepValidator: CfFormStepperCustomStepValidator | null = null;
 
-  protected currentStepId!: T;
   protected stepDefinition: FormDefinition = { id: '', key: '', label: '', description: null, fields: [] };
   protected stepInitialValues: FormValues = {};
-  protected formValues: FormValues = {};
-  /** Live edits on the active form step (merged into resolveSteps before Next/Back). */
-  private liveStepValues: FormValues = {};
   private lastEmittedStateKey = '';
   /** Bumped on each step refresh so cf-form is destroyed/recreated (starts at 0 = not mounted). */
   protected stepFormKey = 0;
-  /** True while {@link prepareStep} resolves the step the user is moving to. */
-  protected preparing = false;
+
+  private readonly engine = new FormStepperEngine<T>();
 
   constructor(private readonly cdr: ChangeDetectorRef) {}
 
-  private get effectiveValues(): FormValues {
-    return { ...this.formValues, ...this.liveStepValues };
+  protected get currentStepId(): T {
+    return this.engine.currentStepIdValue;
   }
 
   protected get activeStepIds(): T[] {
-    if (this.resolveSteps) {
-      return this.resolveSteps(this.effectiveValues);
-    }
-    return this.steps.map(step => step.id);
+    return this.engine.activeStepIds;
   }
 
   protected get stepIndex(): number {
-    return this.activeStepIds.indexOf(this.currentStepId);
+    return this.engine.stepIndex;
   }
 
   protected get isFirstStep(): boolean {
-    return this.stepIndex <= 0;
+    return this.engine.getState().isFirstStep;
   }
 
   protected get isLastStep(): boolean {
-    return this.stepIndex >= this.activeStepIds.length - 1;
+    return this.engine.getState().isLastStep;
   }
 
   protected get currentStepLabel(): string {
-    return this.steps.find(step => step.id === this.currentStepId)?.label ?? '';
+    return this.engine.currentStepLabel;
+  }
+
+  protected get preparing(): boolean {
+    return this.engine.preparingValue;
   }
 
   protected get nextButtonLabel(): string {
@@ -184,7 +182,7 @@ export class CfFormStepperComponent<T extends string = string> implements OnChan
   }
 
   protected get currentStepKind(): 'form' | 'custom' {
-    return this.steps.find(step => step.id === this.currentStepId)?.kind ?? 'form';
+    return this.engine.currentStepKind;
   }
 
   protected get customStepTemplate() {
@@ -192,10 +190,16 @@ export class CfFormStepperComponent<T extends string = string> implements OnChan
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    this.engine.updateHooks({
+      steps: this.steps,
+      resolveSteps: this.resolveSteps,
+      validateStep: this.validateStep,
+      prepareStep: this.prepareStep,
+    });
     if (changes['initialValues'] && !changes['initialValues'].firstChange) {
       const previous = changes['initialValues'].previousValue as FormValues | undefined;
       const current = changes['initialValues'].currentValue as FormValues | undefined;
-      if (previous && current && this.hasSameFormValues(previous, current)) {
+      if (previous && current && !this.engine.shouldResetForInitialValues(previous, current)) {
         return;
       }
       this.resetSteps();
@@ -212,123 +216,121 @@ export class CfFormStepperComponent<T extends string = string> implements OnChan
   }
 
   onBackOrCancel(): void {
-    if (this.preparing) {
+    const result = this.engine.requestBack();
+    if (result.type === 'blocked') {
       return;
     }
-    if (this.isFirstStep) {
+    if (result.type === 'cancel') {
       if (this.allowCancel) {
         this.cancelled.emit();
       }
       return;
     }
     this.mergeCurrentStepValues();
-    void this.goToStep(this.activeStepIds[this.stepIndex - 1]);
+    void this.goToStep(result.stepId);
   }
 
   async onNext(): Promise<void> {
-    if (this.preparing || !this.validateCurrentStep()) {
+    if (this.engine.currentStepKind === 'form' && !this.validateFormStep()) {
+      return;
+    }
+    if (this.engine.currentStepKind === 'custom' && !this.validateCustomStep()) {
       return;
     }
 
     this.mergeCurrentStepValues();
 
-    const crossFieldError = this.validateStep?.(this.currentStepId, this.formValues);
-    if (crossFieldError) {
-      this.validationError.emit(crossFieldError);
+    const result = this.engine.requestNext({
+      formValid: true,
+      customValid: true,
+      validationMessage: this.validationErrorMessage,
+    });
+    if (result.type === 'blocked') {
       return;
     }
-
-    if (this.isLastStep) {
+    if (result.type === 'invalid') {
+      this.validationError.emit(result.message);
+      return;
+    }
+    if (result.type === 'complete') {
       this.emitStepState();
-      this.completed.emit(this.formValues);
+      this.completed.emit(result.values);
       return;
     }
-
-    await this.goToStep(this.activeStepIds[this.stepIndex + 1]);
+    await this.goToStep(result.stepId);
   }
 
   getValues(): FormValues {
-    return { ...this.formValues };
+    return this.engine.getValues();
   }
 
   protected onStepValuesChange(values: FormValues): void {
-    this.liveStepValues = { ...values };
-    this.ensureCurrentStepInActiveIds();
+    const { stepChanged } = this.engine.setLiveStepValues(values);
+    if (stepChanged) {
+      this.refreshStepDefinition();
+    }
     this.emitStepState();
   }
 
   private async goToStep(stepId: T): Promise<void> {
-    if (this.prepareStep) {
-      this.preparing = true;
-      this.emitStepState();
-      this.cdr.markForCheck();
-      try {
-        await this.prepareStep(stepId, { ...this.formValues });
-      } catch {
-        this.validationError.emit(this.prepareStepErrorMessage);
-        return;
-      } finally {
-        this.preparing = false;
-        this.emitStepState();
-        this.cdr.markForCheck();
+    const entered = await this.engine.enterStep(stepId, this.prepareStepErrorMessage);
+    this.emitStepState();
+    this.cdr.markForCheck();
+    if (!entered.ok) {
+      if ('error' in entered && entered.error) {
+        this.validationError.emit(entered.error);
       }
+      return;
     }
 
-    this.currentStepId = stepId;
     this.refreshStepDefinition();
-    this.stepChange.emit({ stepId: this.currentStepId, values: { ...this.formValues } });
+    this.stepChange.emit({ stepId: this.currentStepId, values: this.engine.getValues() });
     this.emitStepState();
   }
 
-  private validateCurrentStep(): boolean {
-    if (this.currentStepKind === 'form') {
-      if (!this.stepForm?.validateForm()) {
-        this.validationError.emit(this.validationErrorMessage);
-        return false;
-      }
-      return true;
+  private validateFormStep(): boolean {
+    if (!this.stepForm?.validateForm()) {
+      this.validationError.emit(this.validationErrorMessage);
+      return false;
     }
+    return true;
+  }
 
+  private validateCustomStep(): boolean {
     if (this.customStepValidator && !this.customStepValidator()) {
       this.validationError.emit(this.validationErrorMessage);
       return false;
     }
-
     return true;
   }
 
   private mergeCurrentStepValues(): void {
     this.customStepValidator = null;
-    if (this.currentStepKind === 'form' && this.stepForm) {
-      // Values from earlier steps are kept even when the current step does not
-      // declare them, but condition-hidden fields must not reach the payload.
-      const merged = { ...this.formValues, ...this.stepForm.getValues() };
-      for (const key of this.stepForm.getConditionHiddenKeys()) {
-        delete merged[key];
-      }
-      this.formValues = merged;
+    if (this.engine.currentStepKind === 'form' && this.stepForm) {
+      this.engine.mergeFormStep(this.stepForm.getValues(), this.stepForm.getConditionHiddenKeys());
+      return;
     }
-    this.liveStepValues = {};
+    this.engine.clearLiveStepValues();
   }
 
   private resetSteps(): void {
-    this.preparing = false;
-    this.formValues = { ...this.initialValues };
-    this.liveStepValues = {};
-    const ids = this.activeStepIds;
-    this.currentStepId = ids[0] ?? this.steps[0]?.id;
+    this.engine.configure({
+      steps: this.steps ?? [],
+      resolveSteps: this.resolveSteps,
+      validateStep: this.validateStep,
+      prepareStep: this.prepareStep,
+      initialValues: this.initialValues,
+    });
     this.refreshStepDefinition();
     this.emitStepState();
   }
 
   private refreshStepDefinition(): void {
     this.customStepValidator = null;
-    this.liveStepValues = {};
-    if (this.currentStepKind === 'form') {
-      this.stepDefinition = this.buildStepDefinition(this.currentStepId, this.formValues);
-      this.stepInitialValues = { ...this.formValues };
-      // Start at 0 so the first mount happens only after stepDefinition is set (same CD).
-      // Later bumps recreate the form when the step changes.
+    this.engine.clearLiveStepValues();
+    if (this.engine.currentStepKind === 'form') {
+      this.stepDefinition = this.buildStepDefinition(this.currentStepId, this.engine.getValues());
+      this.stepInitialValues = { ...this.engine.getValues() };
       this.stepFormKey += 1;
     } else {
       this.stepFormKey = 0;
@@ -336,27 +338,8 @@ export class CfFormStepperComponent<T extends string = string> implements OnChan
     this.cdr.markForCheck();
   }
 
-  private ensureCurrentStepInActiveIds(): void {
-    const ids = this.activeStepIds;
-    if (!ids.length || ids.includes(this.currentStepId)) {
-      return;
-    }
-    this.currentStepId = ids[0];
-    this.refreshStepDefinition();
-  }
-
   private emitStepState(): void {
-    const ids = this.activeStepIds;
-    const stepIndex = Math.max(0, ids.indexOf(this.currentStepId));
-    const totalSteps = Math.max(ids.length, 1);
-    const state: CfFormStepperState<T> = {
-      stepId: this.currentStepId,
-      stepIndex,
-      totalSteps,
-      isFirstStep: stepIndex <= 0,
-      isLastStep: stepIndex >= totalSteps - 1,
-      preparing: this.preparing,
-    };
+    const state = this.engine.getState();
     const key = `${state.stepId}|${state.stepIndex}|${state.totalSteps}`
       + `|${state.isFirstStep}|${state.isLastStep}|${state.preparing}`;
     if (key === this.lastEmittedStateKey) {
@@ -364,14 +347,5 @@ export class CfFormStepperComponent<T extends string = string> implements OnChan
     }
     this.lastEmittedStateKey = key;
     this.stepStateChange.emit(state);
-  }
-
-  private hasSameFormValues(a: FormValues, b: FormValues): boolean {
-    const aKeys = Object.keys(a);
-    const bKeys = Object.keys(b);
-    if (aKeys.length !== bKeys.length) {
-      return false;
-    }
-    return aKeys.every(key => Object.is(a[key], b[key]));
   }
 }

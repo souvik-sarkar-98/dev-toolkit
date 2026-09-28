@@ -25,3 +25,17 @@ export {
 } from './mention-tokens.js';
 
 export type { ContentSegment } from './mention-tokens.js';
+
+export {
+  MentionAutocompleteController,
+  mentionCommandFromKey,
+  defaultDelay,
+} from './mention-autocomplete.js';
+export type {
+  MentionAutocompleteState,
+  MentionAutocompleteOptions,
+  MentionKeyCommand,
+  MentionCommandResult,
+  DelayFn,
+  DelayHandle,
+} from './mention-autocomplete.js';

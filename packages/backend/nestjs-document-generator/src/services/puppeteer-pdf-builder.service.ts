@@ -8,9 +8,59 @@ import {
     IPdfDocumentOptions,
     IPdfTextOptions,
     IPdfImageOptions,
+    IPdfTableColumn,
     IPdfTableOptions,
     IPdfSectionContent,
+    IPdfDividerOptions,
+    IPdfListOptions,
+    IPdfSignatureOptions,
+    IPdfTemplateData,
+    IPdfTocEntry,
+    PdfPageSize,
+    PdfTableCellValue,
+    PdfTableRow,
+    PdfTextAlign,
 } from '../interfaces/pdf-generator.interface';
+
+/** Shapes consumed by `document-template.hbs`. */
+interface HtmlTableCell {
+    value: PdfTableCellValue;
+    align: PdfTextAlign;
+}
+
+interface HtmlTableRow {
+    rowStyle: string;
+    cells: HtmlTableCell[];
+}
+
+interface HtmlElement {
+    type: IPdfSectionContent['type'];
+    data: IPdfSectionContent['data'];
+    style: string;
+    level?: 1 | 2 | 3 | 4;
+    isTOC?: boolean;
+    imgStyle?: string;
+    alignStyle?: string;
+    tableStyle?: string;
+    headerStyle?: string;
+    borderColor?: string;
+    borderWidth?: number;
+    cellPadding?: number;
+    columns?: IPdfTableColumn[];
+    rows?: HtmlTableRow[];
+    listTag?: 'ol' | 'ul';
+    color?: string;
+    thickness?: number;
+    label?: string;
+    dateLabel?: string;
+    space?: number;
+}
+
+interface HtmlSection {
+    title?: string;
+    pageBreak?: boolean;
+    elements: HtmlElement[];
+}
 
 /**
  * Puppeteer Section Builder - Implements same fluent API for HTML generation
@@ -64,7 +114,7 @@ class HtmlSectionBuilder implements IPdfSectionBuilder {
         return this;
     }
 
-    addTable(data: any[][], options?: IPdfTableOptions): IPdfSectionBuilder {
+    addTable(data: PdfTableRow[], options?: IPdfTableOptions): IPdfSectionBuilder {
         this.contents.push({
             type: 'table',
             data,
@@ -73,7 +123,7 @@ class HtmlSectionBuilder implements IPdfSectionBuilder {
         return this;
     }
 
-    addList(items: string[], options?: { ordered?: boolean; bulletChar?: string; indent?: number }): IPdfSectionBuilder {
+    addList(items: string[], options?: IPdfListOptions): IPdfSectionBuilder {
         this.contents.push({
             type: 'list',
             data: items,
@@ -82,7 +132,7 @@ class HtmlSectionBuilder implements IPdfSectionBuilder {
         return this;
     }
 
-    addDivider(options?: { color?: string; thickness?: number }): IPdfSectionBuilder {
+    addDivider(options?: IPdfDividerOptions): IPdfSectionBuilder {
         this.contents.push({
             type: 'divider',
             data: null,
@@ -100,7 +150,7 @@ class HtmlSectionBuilder implements IPdfSectionBuilder {
         return this;
     }
 
-    addSignatureSection(options?: { label?: string; dateLabel?: string; space?: number }): IPdfSectionBuilder {
+    addSignatureSection(options?: IPdfSignatureOptions): IPdfSectionBuilder {
         this.contents.push({
             type: 'signature',
             data: null,
@@ -133,19 +183,29 @@ handlebars.registerHelper('eq', (a, b) => a === b);
 export class PuppeteerPdfBuilderService implements IPdfBuilder {
     private options: IPdfDocumentOptions = {};
     private templateName: string = 'document-template'; // Default template
+    private templateData: IPdfTemplateData = {};
     private sections: { title?: string; contents: IPdfSectionContent[] }[] = [];
     private customStyles: string[] = [];
 
-    constructor(private readonly templatesDir?: string) { }
+    private static readonly PAPER_FORMATS: Record<PdfPageSize, puppeteerType.PaperFormat> = {
+        A4: 'a4',
+        A3: 'a3',
+        LETTER: 'letter',
+        LEGAL: 'legal',
+        TABLOID: 'tabloid',
+    };
+
+    constructor(private readonly templatesDir?: string) {}
 
     setOptions(options: IPdfDocumentOptions): IPdfBuilder {
         this.options = { ...this.options, ...options };
         return this;
     }
 
-    setTemplate(templateName: string, data: any): IPdfBuilder {
+    setTemplate(templateName: string, data: IPdfTemplateData): IPdfBuilder {
         this.templateName = templateName;
-        // The data passed here can be merged with fluent data in build()
+        // Merged with the fluent data in build(); fluent values win on conflict.
+        this.templateData = { ...this.templateData, ...data };
         return this;
     }
 
@@ -171,7 +231,7 @@ export class PuppeteerPdfBuilderService implements IPdfBuilder {
     }
 
     async build(): Promise<Buffer> {
-        let browser;
+        let browser: puppeteerType.Browser | undefined;
         try {
             const puppeteer = await import('puppeteer');
 
@@ -179,6 +239,7 @@ export class PuppeteerPdfBuilderService implements IPdfBuilder {
 
             // Map options and sections to template data
             const data = {
+                ...this.templateData,
                 title: this.options.header?.title,
                 subtitle: this.options.header?.subtitle,
                 date: this.options.header?.date || new Date().toLocaleDateString(),
@@ -205,12 +266,12 @@ export class PuppeteerPdfBuilderService implements IPdfBuilder {
             });
 
             const page = await browser.newPage();
-            await page.setContent(html, {
-                waitUntil: 'networkidle0' as unknown as 'load' | 'domcontentloaded',
-            });
+            // setContent only accepts load/domcontentloaded; idle wait covers late assets.
+            await page.setContent(html, { waitUntil: 'load' });
+            await page.waitForNetworkIdle();
 
             const pdfOptions: puppeteerType.PDFOptions = {
-                format: (this.options.pageSize?.toUpperCase() as any) || 'A4',
+                format: PuppeteerPdfBuilderService.PAPER_FORMATS[this.options.pageSize ?? 'A4'],
                 landscape: this.options.orientation === 'landscape',
                 printBackground: true,
                 margin: {
@@ -227,17 +288,17 @@ export class PuppeteerPdfBuilderService implements IPdfBuilder {
             const pdfBuffer = await page.pdf(pdfOptions);
             return Buffer.from(pdfBuffer);
         } finally {
-            if (browser) await (browser as any).close();
+            if (browser) await browser.close();
         }
     }
 
-    private prepareSectionsForHtml() {
-        const mappedSections: any[] = [];
-        const tocEntries: any[] = [];
+    private prepareSectionsForHtml(): { mappedSections: HtmlSection[]; tocEntries: IPdfTocEntry[] } {
+        const mappedSections: HtmlSection[] = [];
+        const tocEntries: IPdfTocEntry[] = [];
 
         this.sections.forEach(s => {
-            const section: any = { title: s.title };
-            const elements: any[] = [];
+            const section: HtmlSection = { title: s.title, elements: [] };
+            const elements: HtmlElement[] = [];
 
             s.contents.forEach(c => {
                 if (c.type === 'pageBreak') {
@@ -245,10 +306,10 @@ export class PuppeteerPdfBuilderService implements IPdfBuilder {
                     return;
                 }
 
-                const element: any = {
+                const element: HtmlElement = {
                     type: c.type,
                     data: c.data,
-                    style: this.formatTextOptions(c.options)
+                    style: this.formatElementStyle(c)
                 };
 
                 // Type-specific processing
@@ -257,7 +318,7 @@ export class PuppeteerPdfBuilderService implements IPdfBuilder {
                         element.level = c.options?.level || 2;
                         break;
                     case 'text':
-                        if (c.options?.isTOC) {
+                        if (c.options?.isTOC && typeof c.data === 'object') {
                             element.isTOC = true;
                             tocEntries.push(c.data);
                         }
@@ -267,14 +328,14 @@ export class PuppeteerPdfBuilderService implements IPdfBuilder {
                         element.alignStyle = c.options?.align ? `text-align: ${c.options.align};` : '';
                         break;
                     case 'table': {
-                        const options = c.options as IPdfTableOptions;
+                        const options: IPdfTableOptions | undefined = c.options;
                         element.tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; border: ${options?.borderWidth || 1}px solid ${options?.borderColor || '#e5e7eb'}; font-size: ${options?.rowFontSize || 10}pt;`;
                         element.headerStyle = `background-color: ${options?.headerBackground || '#f8fafc'}; color: ${options?.headerTextColor || '#333'}; font-size: ${options?.headerFontSize || 10}pt;`;
                         element.borderColor = options?.borderColor || '#e5e7eb';
                         element.borderWidth = options?.borderWidth || 1;
                         element.cellPadding = options?.cellPadding || 8;
                         element.columns = options?.columns || [];
-                        element.rows = (c.data as any[][]).map((row, rowIndex) => ({
+                        element.rows = c.data.map((row, rowIndex) => ({
                             rowStyle: options?.alternateRowColor && rowIndex % 2 === 1 ? `background-color: ${options.alternateRowColor};` : '',
                             cells: row.map((cell, cellIndex) => ({
                                 value: cell,
@@ -305,6 +366,19 @@ export class PuppeteerPdfBuilderService implements IPdfBuilder {
         });
 
         return { mappedSections, tocEntries };
+    }
+
+    /** Inline style for the element wrapper; only text-like content carries typography. */
+    private formatElementStyle(content: IPdfSectionContent): string {
+        switch (content.type) {
+            case 'heading':
+            case 'paragraph':
+            case 'text':
+            case 'space':
+                return this.formatTextOptions(content.options);
+            default:
+                return '';
+        }
     }
 
     private formatTextOptions(options?: IPdfTextOptions): string {

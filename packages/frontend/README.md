@@ -18,10 +18,10 @@ Shared internals (TypeScript path aliases; React bundles them, Angular `file:`-l
 
 | Library | Role |
 |---------|------|
-| `forms-core` | Models, visibility/dependency engine, validation, API adapters, submit serialization, demo fixture |
-| `comment-core` | Mention tokens, comment editor value builders |
-| `list-dashboard-core` | Unified list/detail/form config, form resolution, preparation, compilation |
-| `auth-core` | Auth user / RBAC models and helpers |
+| `forms-core` | Models, visibility/dependency engine, validation, submit extraction, `FormStepperEngine` |
+| `comment-core` | Mention tokens, autocomplete controller |
+| `list-dashboard-core` | Unified list/detail/form config, preparation, pagination/filter/action state |
+| `auth-core` | Auth user / RBAC session, guard decisions |
 
 Each **adapter** has its own `package.json` and builds to `dist/**`. Apps depend
 on workspace packages with `"@ssdev-toolkit/angular-forms": "*"` (and siblings).

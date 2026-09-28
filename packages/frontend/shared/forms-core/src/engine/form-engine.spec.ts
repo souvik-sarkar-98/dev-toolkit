@@ -360,4 +360,51 @@ describe('FormEngine dependent fields', () => {
     const [typeField] = resolveAllFields(stepTwoDef, engine.getValues());
     expect(typeField.availableOptions).toEqual([{ key: 'ONETIME', label: 'One-time' }]);
   });
+
+  it('getSubmitValues omits condition-hidden fields', () => {
+    const engine = new FormEngine(
+      {
+        id: 'f-submit',
+        key: 'f-submit',
+        label: 'Submit',
+        description: null,
+        fields: [
+          {
+            id: '1',
+            key: 'status',
+            label: 'Status',
+            fieldType: 'text',
+            mandatory: false,
+            fieldOptions: [],
+            isHidden: false,
+            isEncrypted: false,
+            enabled: true,
+            sortOrder: 1,
+            condition: null,
+            dependentOptions: null,
+            validationRules: null,
+          },
+          {
+            id: '2',
+            key: 'amount',
+            label: 'Amount',
+            fieldType: 'number',
+            mandatory: false,
+            fieldOptions: [],
+            isHidden: false,
+            isEncrypted: false,
+            enabled: true,
+            sortOrder: 2,
+            condition: { dependsOnKey: 'status', operator: 'not_equals', value: 'PAID' },
+            dependentOptions: null,
+            validationRules: null,
+          },
+        ],
+      },
+      { status: 'PAID', amount: 10 },
+    );
+
+    expect(engine.getSubmitValues()).toEqual({ status: 'PAID' });
+    expect(engine.getValues().amount).toBe(10);
+  });
 });

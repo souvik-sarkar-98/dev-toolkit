@@ -6,8 +6,30 @@ the list-dashboard adapters. Apps should install
 `@ssdev-toolkit/react-list-dashboard` or `@ssdev-toolkit/angular-list-dashboard`,
 not this folder.
 
-Framework-agnostic types, configs, adapters, form/preparation runtime, and
-route-query utilities for the Universal List Dashboard.
+Framework-agnostic types, configs, adapters, form/preparation runtime, list
+state machines, and route-query utilities for the Universal List Dashboard.
+
+## Responsibility
+
+- Config compile/resolve and form preparation runner
+- Pagination / infinite-list state (`applyInfiniteListPage`, `LoadGeneration`)
+- Debounced search helper (`createDebouncedRunner`) — uses `setTimeout`, not `window`
+- Filter/action visibility and submit decisions
+- Preparation trigger aliasing (`list` → `init`, `create` → `createOpen`, …)
+- Prepared context mapping (`filterOptions`, with `donorOptions` as a compatibility alias)
+
+## Framework adapters
+
+Angular components subscribe and forward UI events. React `useListDashboard` uses the same helpers. Route navigation stays in adapters (`ListRouteSync` / memory sync).
+
+## Migration
+
+- Do not put app-specific keys such as `donorOptions` into generic runtime. Set `preparation.contextBindings.filterOptionsKey` or populate `filterOptions` on the preparation context. `donorOptions` is still read as a fallback alias.
+
+## Framework-only leftovers
+
+- Angular Material sheets, CDK overlay, `ActivatedRoute` subscriptions, RxJS `loadPage` observables, and DOM infinite-scroll sentinels remain in adapters.
+
 
 ## Exports
 

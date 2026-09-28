@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { filter, firstValueFrom, map } from 'rxjs';
-import { AuthUser, RbacUserAccessSnapshot } from '@ssdev-toolkit/auth-core';
+import { AuthUser, loadRbacAfterLogin, RbacUserAccessSnapshot } from '@ssdev-toolkit/auth-core';
 import { PlatformAuthService, LoginType } from './platform-auth.service';
 import { AuthorizationService } from './authorization.service';
 
@@ -20,11 +20,7 @@ export class UserIdentityService<T extends RbacUserAccessSnapshot = RbacUserAcce
     this.isLoggedIn = await this.isUserLoggedIn();
     if (this.isLoggedIn) {
       this.loggedInUser = await this.getUser();
-      try {
-        await this.authorization.load();
-      } catch {
-        // load() marks state as failed; callers use waitUntilLoaded() fail-closed behavior.
-      }
+      await loadRbacAfterLogin(true, () => this.authorization.load());
     }
   }
 

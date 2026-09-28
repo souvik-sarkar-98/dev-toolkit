@@ -1,6 +1,7 @@
 import { InjectionToken } from '@angular/core';
-import type { MentionCandidate } from '@ssdev-toolkit/comment-core';
+import type { MentionUserSearch } from '@ssdev-toolkit/comment-core';
 
-export type MentionUserSearchFn = (query: string) => MentionCandidate[] | Promise<MentionCandidate[]>;
+/** @deprecated Use `MentionUserSearch` from `@ssdev-toolkit/comment-core`. */
+export type MentionUserSearchFn = MentionUserSearch;
 
-export const MENTION_USER_SEARCH = new InjectionToken<MentionUserSearchFn>('MENTION_USER_SEARCH');
+export const MENTION_USER_SEARCH = new InjectionToken<MentionUserSearch>('MENTION_USER_SEARCH');

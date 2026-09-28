@@ -3,6 +3,13 @@ import type { FormDefinition, FormValues } from '@ssdev-toolkit/forms-core';
 import {
   createListPageAdapter,
   ListDashboardRuntime,
+  applyInfiniteListPage,
+  canLoadMore,
+  classifyDashboardRun,
+  createDebouncedRunner,
+  failInfiniteListLoad,
+  filterVisibleActions,
+  LoadGeneration,
   type FilteredListDashboardConfig,
   type FilteredListDashboardPermissions,
   type ListActionDef,
@@ -25,11 +32,7 @@ function visibleActions(
   selection: unknown[],
   entity?: unknown,
 ): ListActionDef[] {
-  return (actions ?? []).filter(
-    (action) =>
-      !action.when ||
-      action.when({ permissions, activeChip: chipId, selection, entity }),
-  );
+  return filterVisibleActions(actions, permissions, chipId, selection, entity);
 }
 
 export function useListDashboard<
@@ -68,7 +71,8 @@ export function useListDashboard<
   const [filterValues, setFilterValues] = useState<FormValues>({});
   const [createForm, setCreateForm] = useState<FormDefinition>();
   const [createValues, setCreateValues] = useState<FormValues>({});
-  const loadGen = useRef(0);
+  const loadGen = useRef(new LoadGeneration());
+  const debounceSearch = useMemo(() => createDebouncedRunner(), []);
 
   const adapter = useMemo(() => {
     if (!compiled) return undefined;
@@ -107,14 +111,13 @@ export function useListDashboard<
   const debounceMs = adapter?.searchDebounceMs ?? 300;
 
   useEffect(() => {
-    const handle = window.setTimeout(() => setDebouncedSearch(searchText), debounceMs);
-    return () => window.clearTimeout(handle);
-  }, [searchText, debounceMs]);
+    debounceSearch(debounceMs, () => setDebouncedSearch(searchText));
+  }, [searchText, debounceMs, debounceSearch]);
 
   const loadPage = useCallback(
     async (nextPage: number, append: boolean) => {
       if (!adapter) return;
-      const gen = ++loadGen.current;
+      const gen = loadGen.current.next();
       if (append) setLoadingMore(true);
       else setLoading(true);
       setError(undefined);
@@ -129,15 +132,35 @@ export function useListDashboard<
             searchText: debouncedSearch,
           }),
         );
-        if (gen !== loadGen.current) return;
-        setTotalSize(page.totalSize);
-        setPageIndex(page.pageIndex);
-        setItems((current) => (append ? [...current, ...page.items] : page.items) as ListRowItem<TEntity>[]);
+        if (!loadGen.current.isCurrent(gen)) return;
+        setItems((current) => {
+          const next = applyInfiniteListPage(
+            {
+              items: current,
+              pageIndex: nextPage,
+              hasMore: false,
+              loading: false,
+              loadingMore: false,
+            },
+            page,
+            append,
+          );
+          setPageIndex(next.pageIndex);
+          setTotalSize(page.totalSize);
+          return next.items as ListRowItem<TEntity>[];
+        });
       } catch (err) {
-        if (gen !== loadGen.current) return;
+        if (!loadGen.current.isCurrent(gen)) return;
+        failInfiniteListLoad({
+          items: [],
+          pageIndex: 0,
+          hasMore: false,
+          loading: false,
+          loadingMore: false,
+        });
         setError(err instanceof Error ? err.message : String(err));
       } finally {
-        if (gen === loadGen.current) {
+        if (loadGen.current.isCurrent(gen)) {
           setLoading(false);
           setLoadingMore(false);
         }
@@ -275,11 +298,12 @@ export function useListDashboard<
 
   const runAction = useCallback(
     async (action: ListActionDef, entity?: TEntity) => {
-      if (action.run === 'openCreate') {
+      const kind = classifyDashboardRun(action.run, action.actionFormId);
+      if (kind === 'openCreate') {
         openCreate();
         return;
       }
-      if (action.run === 'openDetail' || action.run === 'openDetailEdit') {
+      if (kind === 'openDetail' || kind === 'openDetailEdit') {
         const row = items.find((item) => entityFromRow(item) === entity) ?? selectedRow;
         if (row) await openDetail(row);
         return;
@@ -333,7 +357,13 @@ export function useListDashboard<
     setSearchText: setSearchTextState,
     selectChip,
     loadMore: () => {
-      if (!hasMore || loading || loadingMore) return;
+      if (!canLoadMore({
+        items,
+        pageIndex,
+        hasMore,
+        loading,
+        loadingMore,
+      })) return;
       void loadPage(pageIndex + 1, true);
     },
     reload: () => {

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { filter, firstValueFrom, map, merge, Observable, take } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import {
   contextFrom,
   effectivePermissions as coreEffectivePermissions,
@@ -8,7 +8,6 @@ import {
   RbacEntityContext,
   RbacUserAccessSnapshot,
 } from '@ssdev-toolkit/auth-core';
-import { RbacNotLoadedError } from '../errors/rbac-load.error';
 import { RBAC_DATA_SOURCE, RbacDataSource } from '../tokens/rbac-data-source.token';
 import { RbacStateService } from './rbac-state.service';
 
@@ -53,31 +52,7 @@ export class AuthorizationService<T extends RbacUserAccessSnapshot = RbacUserAcc
   }
 
   async waitUntilLoaded(): Promise<T> {
-    if (this.state.loadState === 'loaded' && this.state.snapshot) {
-      return this.state.snapshot;
-    }
-    if (this.state.loadState === 'failed') {
-      throw new RbacNotLoadedError('failed');
-    }
-    if (this.state.loadState === 'cleared') {
-      throw new RbacNotLoadedError('cleared');
-    }
-
-    return firstValueFrom(
-      merge(
-        this.state.snapshot$.pipe(
-          filter((snapshot): snapshot is T => snapshot !== null),
-          take(1),
-        ),
-        this.state.loadState$.pipe(
-          filter((state) => state === 'failed' || state === 'cleared'),
-          take(1),
-          map((state) => {
-            throw new RbacNotLoadedError(state as 'failed' | 'cleared');
-          }),
-        ),
-      ),
-    );
+    return this.state.session.waitUntilLoaded();
   }
 
   effectivePermissions(context?: RbacEntityContext): string[] {

@@ -9,6 +9,8 @@ import {
     IExcelRowData,
     IExcelCellStyle,
     IExcelColumnDefinition,
+    ExcelCellValue,
+    ExcelImageRange,
 } from '../interfaces/excel-generator.interface';
 
 /**
@@ -164,7 +166,7 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
         });
     }
 
-    setCell(row: number, col: number | string, value: any, style?: IExcelCellStyle): IExcelSheetBuilder {
+    setCell(row: number, col: number | string, value: ExcelCellValue, style?: IExcelCellStyle): IExcelSheetBuilder {
         const cell = this.worksheet.getCell(row, typeof col === 'string' ? this.columnLetterToNumber(col) : col);
         cell.value = value;
 
@@ -241,7 +243,7 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
     /**
      * Add an image to the sheet
      */
-    addImage(imageBuffer: Buffer, extension: 'png' | 'jpeg' | 'gif', range: string | any): IExcelSheetBuilder {
+    addImage(imageBuffer: Buffer, extension: 'png' | 'jpeg' | 'gif', range: ExcelImageRange): IExcelSheetBuilder {
         const imageId = this.workbook.addImage({
             buffer: imageBuffer as unknown as ExcelJS.Buffer,
             extension,
@@ -269,7 +271,7 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
 
     addReportHeader(options: { title: string; subtitle?: string; mergeColumns?: number; generationDate?: Date }): IExcelSheetBuilder {
         const mergeCols = options.mergeColumns || 3;
-
+        
         // ── Letterhead (rows 1-4) ──────────────────────────────────────────────
         this.mergeCells(1, 1, 1, mergeCols);
         this.setRowHeight(1, 38);
@@ -303,7 +305,7 @@ class ExcelSheetBuilder implements IExcelSheetBuilder {
 
         const date = options.generationDate || new Date();
         const formattedDate = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
-
+        
         this.mergeCells(8, 1, 8, mergeCols);
         this.setRowHeight(8, 20);
         this.setCell(8, 1, `Generated on: ${formattedDate}`, {

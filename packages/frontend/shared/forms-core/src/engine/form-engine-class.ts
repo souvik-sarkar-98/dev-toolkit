@@ -13,6 +13,7 @@ import {
   resolveAllFields,
   validateForm,
 } from './form-engine.js';
+import { getVisibleSubmitValues } from './submit-values.js';
 
 export class FormEngine {
   private values: FormValues;
@@ -70,6 +71,10 @@ export class FormEngine {
 
   getVisibleFields(): ResolvedField[] {
     return this.getResolvedFields().filter((f) => f.visible);
+  }
+
+  getSubmitValues(): FormValues {
+    return getVisibleSubmitValues(this.getValues(), this.getVisibleFields());
   }
 
   /** Keys of fields hidden by an unmet condition — never part of a submit payload. */

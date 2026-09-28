@@ -11,23 +11,10 @@ import {
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import type { FormDefinition, FormEngineOptions, FormStep, FormValues } from '@ssdev-toolkit/forms-core';
-import { isDateRangeValue } from '@ssdev-toolkit/forms-core';
+import { hasSameFormValues, isSameFormValue } from '@ssdev-toolkit/forms-core';
 import { CfFieldComponent } from './cf-field.component';
 import { FormEngineService } from './form-engine.service';
 import { CF_FORM_CLASS_NAMES, type CfFormClassNames } from './tokens';
-
-function isSameFormValue(current: unknown, next: unknown): boolean {
-  if (current === next) {
-    return true;
-  }
-  if (isDateRangeValue(current) && isDateRangeValue(next)) {
-    return current.startDate === next.startDate && current.endDate === next.endDate;
-  }
-  if (Array.isArray(current) && Array.isArray(next)) {
-    return current.length === next.length && current.every((item, index) => item === next[index]);
-  }
-  return false;
-}
 
 @Component({
   selector: 'cf-form',
@@ -269,12 +256,6 @@ export class CfFormComponent implements OnChanges {
   }
 
   private hasSameFormValues(previous: FormValues, next: FormValues): boolean {
-    const keys = new Set([...Object.keys(previous), ...Object.keys(next)]);
-    for (const key of keys) {
-      if (!isSameFormValue(previous[key], next[key])) {
-        return false;
-      }
-    }
-    return true;
+    return hasSameFormValues(previous, next);
   }
 }

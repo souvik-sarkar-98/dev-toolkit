@@ -10,6 +10,7 @@ import type {
   ListFormFlowKind,
   RefDataMap,
 } from '@ssdev-toolkit/list-dashboard-core';
+import { decideActionFormSubmit } from '@ssdev-toolkit/list-dashboard-core';
 
 export interface ListActionFormSaved<TEntity> {
   actionFormId: string;
@@ -237,17 +238,24 @@ export class ListActionFormController<TEntity> {
     const config = this.activeConfig;
     const entity = this.entity;
     const actionFormId = this.actionFormId;
-    if (!config || entity === undefined || !actionFormId || this.saving) return;
-
+    const decision = decideActionFormSubmit({
+      hasConfig: !!config,
+      hasEntity: entity !== undefined,
+      hasId: !!actionFormId,
+      saving: this.saving,
+      validationError: config && entity !== undefined
+        ? config.validateBeforeSave?.(this.buildContext(values))
+        : undefined,
+    });
+    if (decision.type === 'skip' || !config || entity === undefined || !actionFormId) return;
     this.latestValues = values;
-    const context = this.buildContext(values);
-    const validationError = config.validateBeforeSave?.(context);
-    if (validationError) {
-      this.documentError = validationError;
-      this.options?.onValidationError?.(validationError);
+    if (decision.type === 'invalid') {
+      this.documentError = decision.message;
+      this.options?.onValidationError?.(decision.message);
       return;
     }
 
+    const context = this.buildContext(values);
     this.saving = true;
     this.subscription.add(
       config.save(context).subscribe({

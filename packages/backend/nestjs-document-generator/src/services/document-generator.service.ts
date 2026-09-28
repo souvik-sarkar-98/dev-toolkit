@@ -1,4 +1,6 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
 import { DocumentGeneratorModuleOptions } from '../document-generator.schema';
 import { DOCUMENT_GENERATOR_OPTIONS } from '../infrastructure/document-generator-options.token';
 import { PdfBuilderService } from './pdf-builder.service';
@@ -12,7 +14,7 @@ export class DocumentGeneratorService {
     @Optional()
     @Inject(DOCUMENT_GENERATOR_OPTIONS)
     private readonly options: DocumentGeneratorModuleOptions = {},
-  ) { }
+  ) {}
 
   createPdfBuilder(engine: 'pdfkit' | 'puppeteer' = 'pdfkit'): IPdfBuilder {
     if (engine === 'puppeteer') {
@@ -29,8 +31,6 @@ export class DocumentGeneratorService {
     if (this.options.templatesDir) {
       return this.options.templatesDir;
     }
-    const path = require('path') as typeof import('path');
-    const fs = require('fs') as typeof import('fs');
     const distTemplates = path.join(__dirname, 'templates');
     if (fs.existsSync(distTemplates)) {
       return distTemplates;
