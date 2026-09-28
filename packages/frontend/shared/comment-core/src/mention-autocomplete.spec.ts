@@ -22,13 +22,13 @@ describe('MentionAutocompleteController', () => {
   };
 
   it('debounces search and ignores stale responses', async () => {
-    let resolveFirst!: (value: { userId: string; displayName: string }[]) => void;
-    const first = new Promise<{ userId: string; displayName: string }[]>((resolve) => {
+    let resolveFirst!: (value: { userId: string; displayName: string; email: string }[]) => void;
+    const first = new Promise<{ userId: string; displayName: string; email: string }[]>((resolve) => {
       resolveFirst = resolve;
     });
     const searchUsers = vi.fn((query: string) => {
       if (query === 'al') return first;
-      return Promise.resolve([{ userId: '2', displayName: 'Alexa' }]);
+      return Promise.resolve([{ userId: '2', displayName: 'Alexa', email: '' }]);
     });
 
     const controller = new MentionAutocompleteController({
@@ -40,18 +40,18 @@ describe('MentionAutocompleteController', () => {
     controller.setQuery('al');
     controller.setQuery('alex');
     await Promise.resolve();
-    resolveFirst([{ userId: '1', displayName: 'Alan' }]);
+    resolveFirst([{ userId: '1', displayName: 'Alan', email: '' }]);
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(controller.getState().candidates).toEqual([{ userId: '2', displayName: 'Alexa' }]);
+    expect(controller.getState().candidates).toEqual([{ userId: '2', displayName: 'Alexa', email: '' }]);
   });
 
   it('confirm selects the active candidate', async () => {
     const controller = new MentionAutocompleteController({
       searchUsers: () => [
-        { userId: '1', displayName: 'Ann' },
-        { userId: '2', displayName: 'Bob' },
+        { userId: '1', displayName: 'Ann', email: '' },
+        { userId: '2', displayName: 'Bob', email: '' },
       ],
       delay: immediateDelay,
       debounceMs: 0,
