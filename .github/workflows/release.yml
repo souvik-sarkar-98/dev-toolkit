@@ -28,8 +28,11 @@ jobs:
       npm_scope: '@ssdev-toolkit'
       version_command: 'npm run version-packages'
       publish_to_npm: true
-      publish_command: ${{ github.ref_name == 'main' && 'npm run release' || 'npm run release:beta' }}
-      create_tags_and_releases: false
+      publish_command: 'npm run release'
+      prerelease_publish_command: 'npm run release:beta'
+      stable_branch: main
+      prerelease_branch: stage
+      prerelease_tag: beta
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
