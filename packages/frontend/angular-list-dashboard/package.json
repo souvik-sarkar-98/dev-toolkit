@@ -1,6 +1,6 @@
 {
   "name": "@ssdev-toolkit/angular-list-dashboard",
-  "version": "2.0.0",
+  "version": "2.0.1-beta.0",
   "files": [
     "dist"
   ],
@@ -16,7 +16,7 @@
     "@angular/forms": "^19.0.0 || ^20.0.0 || ^21.0.0",
     "@angular/material": "^19.0.0 || ^20.0.0 || ^21.0.0",
     "@angular/router": "^19.0.0 || ^20.0.0 || ^21.0.0",
-    "@ssdev-toolkit/angular-forms": "*"
+    "@ssdev-toolkit/angular-forms": "1.1.1-beta.0"
   },
   "dependencies": {
     "tslib": "^2.3.0",
@@ -46,7 +46,7 @@
     "@angular/forms": "^21.2.19",
     "@angular/material": "^21.2.14",
     "@angular/router": "^21.2.19",
-    "@ssdev-toolkit/angular-forms": "*",
+    "@ssdev-toolkit/angular-forms": "1.1.1-beta.0",
     "ng-packagr": "^21.2.0",
     "typescript": "~5.9.3",
     "@angular/platform-browser": "^21.2.19"
