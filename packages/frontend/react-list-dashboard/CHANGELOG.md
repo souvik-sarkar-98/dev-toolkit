@@ -1,5 +1,11 @@
 # @ssdev-toolkit/react-list-dashboard
 
+## 2.0.1-beta.0
+
+### Patch Changes
+
+- @ssdev-toolkit/react-forms@1.1.1-beta.0
+
 ## 2.0.0
 
 ### Minor Changes
