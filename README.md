@@ -40,7 +40,7 @@ node scripts/import-web-packages.mjs
 - npm 10+
 - NestJS 11 (host app)
 
-Install once at the repo root:
+Install once at the repo root: 
 
 ```bash
 npm install
