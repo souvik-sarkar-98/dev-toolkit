@@ -4,7 +4,7 @@ on:
   pull_request:
     branches:
       - main
-      - stage
+      - develop
 
 concurrency:
   group: changeset-check-${{ github.event.pull_request.number }}
