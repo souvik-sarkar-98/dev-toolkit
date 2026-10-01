@@ -18,6 +18,9 @@ jobs:
   changeset-check:
     uses: nabarun-ngo/ngo-nabarun-deploy/.github/workflows/reusable-ci-changeset-check.yml@main
     with:
+      templates_repository: nabarun-ngo/ngo-nabarun-deploy
       node_version: '22'
       working_directory: '.'
       packages_filter: 'packages/**'
+    secrets:
+      TEMPLATES_TOKEN: ${{ secrets.RELEASE_TOKEN }}
