@@ -1,15 +1,13 @@
-# Changesets npm publish via deploy-platform reusable-ci-publish.yml
-# (this workspace’s deploy-main repo).
+# Library release for @ssdev-toolkit/*.
+# develop publishes beta. main publishes latest.
+# A push that only adds Changesets must still run, so this workflow has no path filter.
 
 name: Release
 
 on:
-  workflow_dispatch:  
+  workflow_dispatch:
   push:
-    branches: [main, stage]
-    paths-ignore:
-      - '.github/**'
-      - '.changeset/**'
+    branches: [main, develop]
 
 concurrency:
   group: release-${{ github.ref }}
@@ -23,6 +21,7 @@ jobs:
   publish:
     uses: nabarun-ngo/ngo-nabarun-deploy/.github/workflows/reusable-ci-publish.yml@main
     with:
+      templates_repository: nabarun-ngo/ngo-nabarun-deploy
       node_version: '22'
       working_directory: '.'
       npm_scope: '@ssdev-toolkit'
@@ -31,8 +30,9 @@ jobs:
       publish_command: 'npm run release'
       prerelease_publish_command: 'npm run release:beta'
       stable_branch: main
-      prerelease_branch: stage
+      prerelease_branch: develop
       prerelease_tag: beta
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.OWNER_PAT }}
+      TEMPLATES_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -2,17 +2,19 @@ name: CI
 
 on:
   pull_request:
-    branches: 
-       - main
-       - stage
+    branches:
+      - main
+      - develop
     types: [opened, synchronize, reopened]
-    paths-ignore:
-    - '.github/**'
-    - '.changeset/**'
 
 concurrency:
   group: ci-${{ github.event.pull_request.number }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
 
 jobs:
   check:
