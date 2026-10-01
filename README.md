@@ -43,7 +43,7 @@ node scripts/import-web-packages.mjs
 Install once at the repo root: 
 
 ```bash
-npm install
+npm install 
 ``` 
 
 ## Commands (from repo root)
