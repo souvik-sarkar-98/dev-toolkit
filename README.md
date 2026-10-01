@@ -44,7 +44,7 @@ Install once at the repo root:
 
 ```bash
 npm install
-```
+``` 
 
 ## Commands (from repo root)
 
