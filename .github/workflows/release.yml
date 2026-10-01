@@ -34,5 +34,5 @@ jobs:
       prerelease_tag: beta
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      GH_TOKEN: ${{ secrets.OWNER_PAT }}
       TEMPLATES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
