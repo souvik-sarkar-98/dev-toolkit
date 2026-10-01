@@ -24,4 +24,4 @@ jobs:
       working_directory: '.'
       packages_filter: 'packages/**'
     secrets:
-      TEMPLATES_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      TEMPLATES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
