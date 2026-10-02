@@ -23,6 +23,7 @@ jobs:
   publish:
     uses: nabarun-ngo/ngo-nabarun-deploy/.github/workflows/reusable-ci-publish.yml@main
     with:
+      templates_repository: 'nabarun-ngo/ngo-nabarun-deploy'
       node_version: '22'
       working_directory: '.'
       npm_scope: '@ssdev-toolkit'
