@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   publish:
-    uses: nabarun-ngo/ngo-nabarun-deploy/.github/workflows/reusable-ci-publish.yml@main
+    uses: nabarun-ngo/ngo-nabarun-deploy/.github/workflows/reusable-ci-npm-publish.yml@main
     with:
       templates_repository: nabarun-ngo/ngo-nabarun-deploy
       node_version: '22'
